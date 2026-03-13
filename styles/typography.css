@@ -1,0 +1,9 @@
+@layer components {
+  .header-1 {
+    @apply tracking-tight text-3xl font-bold text-foreground text-balance;
+  }
+
+  .description {
+    @apply text-muted-foreground text-balance;
+  }
+}
