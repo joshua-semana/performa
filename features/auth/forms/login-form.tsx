@@ -1,21 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { useForm } from "@tanstack/react-form";
-import { loginSchema } from "../schemas/login.schema";
-import { useState } from "react";
-import { AlertCircleIcon, Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -23,6 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { useForm } from "@tanstack/react-form";
+import { AlertCircleIcon, Eye, EyeOff, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { loginSchema } from "../schemas/login.schema";
 
 export function LoginForm() {
   const { signIn } = useAuthActions();

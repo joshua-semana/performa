@@ -1,18 +1,27 @@
-import { FieldDescription } from "@/components/ui/field";
-import { LoginForm } from "@/features/auth/forms/login-form";
-import { ChartColumnBig } from "lucide-react";
+"use client";
 
-export default function Page() {
+import { useConvexAuth } from "convex/react";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export default function RootPage() {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (isAuthenticated) {
+      router.push("/home");
+    } else {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   return (
-    <main className="flex flex-col min-h-svh items-center justify-center gap-6 p-6 bg-muted">
-      <div className="flex items-center gap-2 font-bold">
-        <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <ChartColumnBig className="size-4" />
-        </div>
-        Performa
-      </div>
-      <LoginForm />
-      <FieldDescription>v1.0.0 © IT Department</FieldDescription>
+    <main className="flex items-center justify-center min-h-svh gap-2">
+      <Loader2 className="size-6 animate-spin" /> Loading, please wait...
     </main>
   );
 }
