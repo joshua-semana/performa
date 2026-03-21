@@ -10,14 +10,14 @@ const schema = defineSchema({
     // The user who is head of the department,
     // Maybe useful later for who can evaluate who
     headId: v.optional(v.id("users")),
-  }),
+  }).index("by_name", ["name"]),
 
   positions: defineTable({
     name: v.string(),
-  }),
+  }).index("by_name", ["name"]),
 
   userProfiles: defineTable({
-    userId: v.id("users"),
+    userId: v.optional(v.id("users")),
 
     employeeId: v.string(),
     email: v.string(),
@@ -27,16 +27,16 @@ const schema = defineSchema({
     lastName: v.string(),
     suffix: v.optional(v.string()),
 
-    gender: v.optional(v.string()),
+    gender: v.string(),
     phoneNumber: v.optional(v.string()),
-    dateOfBirth: v.optional(v.number()),
-    hireDate: v.optional(v.number()),
+    dateOfBirth: v.optional(v.string()),
+    hireDate: v.optional(v.string()),
 
     departmentId: v.optional(v.id("departments")),
-    positionId: v.optional(v.id("positions")),
+    positionId: v.id("positions"),
     role: v.string(),
 
-    isActive: v.boolean(),
+    status: v.string(),
   }),
 });
 

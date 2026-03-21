@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { wait } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function UsersPage() {
-  await wait(2000); // 2 seconds delay
   return (
     <div className="flex flex-col gap-6 w-full">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

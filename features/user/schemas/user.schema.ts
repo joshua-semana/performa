@@ -3,24 +3,27 @@ import z from "zod";
 export const baseUserProfileSchema = z.object({
   userId: z.string().or(z.literal("")),
 
-  employeeId: z.string().min(1),
-  email: z.email(),
+  employeeId: z.string().trim().min(1, "Employee ID is required."),
+  email: z.email("Please enter a valid email address."),
 
-  firstName: z.string().min(1),
-  middleName: z.string().or(z.literal("")),
-  lastName: z.string().min(1),
-  suffix: z.string().or(z.literal("")),
+  firstName: z.string().trim().min(1, "First name is required."),
+  middleName: z.string().trim().or(z.literal("")),
+  lastName: z.string().trim().min(1, "Last name is required."),
+  suffix: z.string().trim().or(z.literal("")),
 
-  gender: z.string().or(z.literal("")),
-  phoneNumber: z.string().or(z.literal("")),
+  gender: z.string(),
+  phoneNumber: z
+    .string()
+    .regex(/^[0-9]{9}$/, "Phone number must contain 9 digits")
+    .or(z.literal("")),
   dateOfBirth: z.string().or(z.literal("")),
   hireDate: z.string().or(z.literal("")),
 
   departmentId: z.string().or(z.literal("")),
-  positionId: z.string().or(z.literal("")),
-  role: z.string(),
+  positionId: z.string().min(1, "Position is required."),
+  role: z.string().min(1, "Role is required."),
 
-  isActive: z.boolean(),
+  status: z.enum(["invited", "active"]),
 });
 
 export const createUserSchema = baseUserProfileSchema.omit({ userId: true });
