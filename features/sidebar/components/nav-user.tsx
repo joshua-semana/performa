@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +14,19 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Bolt, CircleUser, EllipsisVertical, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { MenuSignOut } from "./menu-signout";
-import { currentUser } from "@/lib/data";
+import {
+  AvatarSkeleton,
+  TextSkeleton,
+} from "@/components/skeletons/primitives";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
+  const { user, fullName, isUserLoading } = useCurrentUser();
 
   return (
     <SidebarMenu>
@@ -32,19 +37,27 @@ export function NavUser() {
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               tooltip="User Settings"
+              disabled={isUserLoading}
             >
-              <Avatar>
-                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                <AvatarFallback>{currentUser.name[0]}</AvatarFallback>
-              </Avatar>
-              <div className="leading-tight">
-                <p className="truncate font-medium text-sm">
-                  {currentUser.name}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {currentUser.email}
-                </p>
-              </div>
+              {isUserLoading ? (
+                <div className="flex gap-2 items-center">
+                  <AvatarSkeleton />
+                  <TextSkeleton />
+                </div>
+              ) : (
+                <>
+                  <Avatar>
+                    <AvatarFallback>{user?.firstName[0]}</AvatarFallback>
+                  </Avatar>
+
+                  <div className="leading-tight">
+                    <p className="truncate font-medium text-sm">{fullName}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </>
+              )}
               <EllipsisVertical className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>

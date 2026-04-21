@@ -47,7 +47,7 @@ import {
   editUserSchema,
   UserProfile,
 } from "../schemas/user.schema";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
@@ -63,7 +63,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
   const positions = useQuery(api.positions.getPositions);
   const departments = useQuery(api.departments.getDepartments);
 
-  const createUser = useMutation(api.users.createUserByAdmin);
+  const createUser = useAction(api.users.adminCreateUser);
 
   const form = useForm({
     defaultValues: {
@@ -80,7 +80,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
       departmentId: user?.departmentId ?? "",
       positionId: user?.positionId ?? "",
       role: user?.role ?? "",
-      status: user?.role ?? "invited",
+      status: user?.role ?? "active",
     },
     validators: {
       onSubmit: mode === "create" ? createUserSchema : editUserSchema,

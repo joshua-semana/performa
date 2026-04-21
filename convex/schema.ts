@@ -17,7 +17,7 @@ const schema = defineSchema({
   }).index("by_name", ["name"]),
 
   userProfiles: defineTable({
-    userId: v.optional(v.id("users")),
+    userId: v.id("users"),
 
     employeeId: v.string(),
     email: v.string(),
@@ -37,7 +37,7 @@ const schema = defineSchema({
     role: v.string(),
 
     status: v.string(),
-  }),
+  }).index("by_userId", ["userId"]),
 });
 
 export default schema;

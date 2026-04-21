@@ -23,7 +23,7 @@ export const baseUserProfileSchema = z.object({
   positionId: z.string().min(1, "Position is required."),
   role: z.string().min(1, "Role is required."),
 
-  status: z.enum(["invited", "active"]),
+  status: z.enum(["active", "inactive"]),
 });
 
 export const createUserSchema = baseUserProfileSchema.omit({ userId: true });

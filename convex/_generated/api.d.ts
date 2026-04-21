@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as departments from "../departments.js";
 import type * as http from "../http.js";
 import type * as positions from "../positions.js";
+import type * as userProfiles from "../userProfiles.js";
 import type * as users from "../users.js";
 
 import type {
@@ -25,6 +26,7 @@ declare const fullApi: ApiFromModules<{
   departments: typeof departments;
   http: typeof http;
   positions: typeof positions;
+  userProfiles: typeof userProfiles;
   users: typeof users;
 }>;
 
