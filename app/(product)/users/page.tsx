@@ -14,12 +14,21 @@ export default function UsersPage() {
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const currentCursor = cursors[pageIndex];
 
+  const [search, setSearch] = useState("");
+
   const result = useQuery(api.userProfiles.getProfiles, {
     paginationOpts: {
       numItems: 10,
       cursor: currentCursor,
     },
+    search: search || undefined,
   });
+
+  const handleSearch = (value: string) => {
+    setPageIndex(0);
+    setCursors([null]);
+    setSearch(value);
+  };
 
   const handleSetPageIndex = (newIndex: number) => {
     if (newIndex > pageIndex && result?.continueCursor) {
@@ -58,6 +67,8 @@ export default function UsersPage() {
           setPageIndex={handleSetPageIndex}
           isLoading={result === undefined}
           isDone={result?.isDone ?? false}
+          onSearch={handleSearch}
+          searchValue={search}
         />
       </div>
     </div>

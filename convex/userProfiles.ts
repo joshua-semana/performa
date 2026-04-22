@@ -23,8 +23,33 @@ export const getProfiles = query({
       numItems: v.number(),
       cursor: v.union(v.string(), v.null()),
     }),
+
+    search: v.optional(v.string()),
+    status: v.optional(v.string()),
+
+    sortBy: v.optional(v.string()),
+    sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.query("userProfiles").paginate(args.paginationOpts);
+    if (args.search) {
+      const search = args.search.toLowerCase();
+
+      return await ctx.db
+        .query("userProfiles")
+        .withSearchIndex("search_users", (q) => {
+          let searchQuery = q.search("searchText", search);
+
+          return searchQuery;
+        })
+        .paginate(args.paginationOpts);
+    }
+
+    let query = ctx.db.query("userProfiles");
+
+    if (args.status) {
+      query = query.filter((q) => q.eq(q.field("status"), args.status));
+    }
+
+    return await query.paginate(args.paginationOpts);
   },
 });

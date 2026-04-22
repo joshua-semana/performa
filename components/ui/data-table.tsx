@@ -15,7 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ChevronFirst, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Button } from "./button";
+import { Input } from "./input";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./input-group";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -26,6 +29,9 @@ interface DataTableProps<TData, TValue> {
 
   isLoading: boolean;
   isDone: boolean;
+
+  onSearch?: (value: string) => void;
+  searchValue?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -35,6 +41,8 @@ export function DataTable<TData, TValue>({
   setPageIndex,
   isLoading,
   isDone,
+  onSearch,
+  searchValue,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -53,6 +61,18 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
+      {/* Search */}
+      <InputGroup className="max-w-72">
+        <InputGroupInput
+          placeholder="Search ..."
+          value={searchValue ?? ""}
+          onChange={(e) => onSearch?.(e.target.value)}
+        />
+        <InputGroupAddon>
+          <Search />
+        </InputGroupAddon>
+      </InputGroup>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -104,23 +124,35 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
+      {/* Pagination Controls */}
+      <div className="flex items-center gap-4">
         <Button
           onClick={() => setPageIndex(pageIndex - 1)}
           disabled={pageIndex === 0}
-          className="border px-3 py-1 rounded disabled:opacity-50"
+          variant={"outline"}
+          size={"icon"}
         >
-          Prev
+          <ChevronFirst />
         </Button>
 
-        <span>Page {pageIndex + 1}</span>
+        <span>Page {pageIndex + 1} of many</span>
+
+        <Button
+          onClick={() => setPageIndex(pageIndex - 1)}
+          disabled={pageIndex === 0}
+          variant={"outline"}
+          size={"icon"}
+        >
+          <ChevronLeft />
+        </Button>
 
         <Button
           onClick={() => setPageIndex(pageIndex + 1)}
           disabled={isDone}
-          className="border px-3 py-1 rounded disabled:opacity-50"
+          variant={"outline"}
+          size={"icon"}
         >
-          Next
+          <ChevronRight />
         </Button>
       </div>
     </div>
