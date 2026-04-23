@@ -31,6 +31,7 @@ export const getProfiles = query({
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
+    // You cannot assign OrderedQuery (.withSearchIndex) inside a QueryInitializer
     if (args.search) {
       const search = args.search.toLowerCase();
 

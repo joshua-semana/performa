@@ -4,32 +4,39 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { api } from "@/convex/_generated/api";
 import { userColumns } from "@/features/user/components/columns";
+import { useDebounce } from "@/hooks/use-debounce";
+import { tableConfig } from "@/lib/config/table";
 import { useQuery } from "convex/react";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function UsersPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [cursors, setCursors] = useState<(string | null)[]>([null]);
   const currentCursor = cursors[pageIndex];
 
+  const [rowsPerPage, setRowsPerPage] = useState(tableConfig.defaultPageSize);
+
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, tableConfig.debounceMs);
 
   const result = useQuery(api.userProfiles.getProfiles, {
     paginationOpts: {
-      numItems: 10,
+      numItems: rowsPerPage,
       cursor: currentCursor,
     },
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
 
-  const handleSearch = (value: string) => {
+  // Resets the table when a search or rows per page changes
+  useEffect(() => {
     setPageIndex(0);
     setCursors([null]);
-    setSearch(value);
-  };
+  }, [debouncedSearch, rowsPerPage]);
 
+  // This maps the numerical index of DataTable's page
+  // with the Convex cursor-based pagination
   const handleSetPageIndex = (newIndex: number) => {
     if (newIndex > pageIndex && result?.continueCursor) {
       setCursors((prev) => {
@@ -65,9 +72,11 @@ export default function UsersPage() {
           columns={userColumns}
           pageIndex={pageIndex}
           setPageIndex={handleSetPageIndex}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={setRowsPerPage}
           isLoading={result === undefined}
           isDone={result?.isDone ?? false}
-          onSearch={handleSearch}
+          onSearch={setSearch}
           searchValue={search}
         />
       </div>

@@ -6,6 +6,7 @@ import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { uiConfig } from "@/lib/config/ui";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -38,7 +39,7 @@ export default function RootLayout({
         >
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme={uiConfig.defaultTheme}
             enableSystem
             disableTransitionOnChange
           >

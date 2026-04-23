@@ -16,6 +16,7 @@ import { NavUser } from "./nav-user";
 import Link from "next/link";
 import { SidebarItem } from "@/lib/sidebar/types";
 import { NavMain } from "./nav-main";
+import { appConfig } from "@/lib/config/app";
 
 export function AppSidebar() {
   return (
@@ -30,10 +31,10 @@ export function AppSidebar() {
                 </div>
                 <div className="flex flex-col leading-tight">
                   <span className="truncate font-semibold text-sm">
-                    Performa
+                    {appConfig.name}
                   </span>
                   <span className="truncate text-muted-foreground text-xs">
-                    Appraisal Management
+                    {appConfig.description}
                   </span>
                 </div>
               </Link>
