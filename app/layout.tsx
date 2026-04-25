@@ -7,6 +7,7 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { uiConfig } from "@/lib/config/ui";
+import { appConfig } from "@/lib/config/app";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -21,9 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Performa",
-  description:
-    "Performance Appraisal System for The Philippine School Employees",
+  title: appConfig.name,
+  description: appConfig.description,
 };
 
 export default function RootLayout({

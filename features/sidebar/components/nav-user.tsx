@@ -22,11 +22,13 @@ import {
   AvatarSkeleton,
   TextSkeleton,
 } from "@/components/skeletons/primitives";
+import { cn } from "@/lib/utils";
+import { getAvatarColor } from "@/lib/ui";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
-  const { user, fullName, isUserLoading } = useCurrentUser();
+  const { user, fullName, initials, isUserLoading } = useCurrentUser();
 
   return (
     <SidebarMenu>
@@ -44,18 +46,29 @@ export function NavUser() {
                   <AvatarSkeleton />
                   <TextSkeleton />
                 </div>
-              ) : (
+              ) : user ? (
                 <>
                   <Avatar>
-                    <AvatarFallback>{user?.firstName[0]}</AvatarFallback>
+                    <AvatarFallback
+                      className={cn(getAvatarColor(initials ?? "X"))}
+                    >
+                      {initials}
+                    </AvatarFallback>
                   </Avatar>
 
                   <div className="leading-tight">
                     <p className="truncate font-medium text-sm">{fullName}</p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {user?.email}
+                      {user.email}
                     </p>
                   </div>
+                </>
+              ) : (
+                <>
+                  <Avatar>
+                    <AvatarFallback>X</AvatarFallback>
+                  </Avatar>
+                  <p className="truncate font-medium text-sm">No User Found</p>
                 </>
               )}
               <EllipsisVertical className="ml-auto" />

@@ -7,6 +7,7 @@ export const adminCreateUser = action({
   args: {
     employeeId: v.string(),
     email: v.string(),
+    password: v.string(),
     firstName: v.string(),
     middleName: v.optional(v.string()),
     lastName: v.string(),
@@ -25,7 +26,7 @@ export const adminCreateUser = action({
       provider: "password",
       account: {
         id: args.email,
-        secret: args.firstName,
+        secret: args.password,
       },
       profile: {
         email: args.email,

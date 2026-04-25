@@ -31,11 +31,18 @@ export const getProfiles = query({
     sortOrder: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
+    const sortIndexMap = {
+      email: "by_email",
+      firstName: "by_firstName",
+    } as const;
+
+    let result;
+
     // You cannot assign OrderedQuery (.withSearchIndex) inside a QueryInitializer
     if (args.search) {
       const search = args.search.toLowerCase();
 
-      return await ctx.db
+      result = await ctx.db
         .query("userProfiles")
         .withSearchIndex("search_users", (q) => {
           let searchQuery = q.search("searchText", search);
@@ -43,14 +50,44 @@ export const getProfiles = query({
           return searchQuery;
         })
         .paginate(args.paginationOpts);
+    } else {
+      let query = ctx.db.query("userProfiles");
+
+      const sortIndex =
+        args.sortBy && sortIndexMap[args.sortBy as keyof typeof sortIndexMap];
+
+      if (sortIndex) {
+        result = await query
+          .withIndex(sortIndex, (q) => q)
+          .order(args.sortOrder === "desc" ? "desc" : "asc")
+          .paginate(args.paginationOpts);
+      } else {
+        result = await query.paginate(args.paginationOpts);
+      }
     }
 
-    let query = ctx.db.query("userProfiles");
+    const enrichedPage = await Promise.all(
+      result.page.map(async (user) => {
+        const department = user.departmentId
+          ? await ctx.db.get(user.departmentId)
+          : null;
 
-    if (args.status) {
-      query = query.filter((q) => q.eq(q.field("status"), args.status));
-    }
+        const position = await ctx.db.get(user.positionId);
 
-    return await query.paginate(args.paginationOpts);
+        const departmentName = department?.name;
+        const positionName = position?.name;
+
+        return {
+          ...user,
+          departmentName,
+          positionName,
+        };
+      }),
+    );
+
+    return {
+      ...result,
+      page: enrichedPage,
+    };
   },
 });

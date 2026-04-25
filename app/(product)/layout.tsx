@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react/jsx-runtime";
+import { appConfig } from "@/lib/config/app";
 
 interface BreadcrumbItem {
   title: string;
@@ -98,7 +99,7 @@ export default function ProductLayout({
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="/home">Performa</BreadcrumbLink>
+                <BreadcrumbLink href="/home">{appConfig.name}</BreadcrumbLink>
               </BreadcrumbItem>
               {breadcrumbs.map((breadcrumb, index) => (
                 <Fragment key={breadcrumb.title + index}>

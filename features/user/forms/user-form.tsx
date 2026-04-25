@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -37,20 +36,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { useForm } from "@tanstack/react-form";
+import { useAction, useQuery } from "convex/react";
 import { format } from "date-fns";
-import { ArrowLeft, CalendarIcon, Loader2, Save, X } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarIcon,
+  Eye,
+  EyeOff,
+  Loader2,
+  Save,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   createUserSchema,
   editUserSchema,
   UserProfile,
 } from "../schemas/user.schema";
-import { useAction, useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { toast } from "sonner";
+import { appConfig } from "@/lib/config/app";
 
 interface UserFormProps {
   user?: UserProfile;
@@ -58,6 +67,8 @@ interface UserFormProps {
 }
 
 export default function UserForm({ user, mode }: UserFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+
   const router = useRouter();
 
   const positions = useQuery(api.positions.getPositions);
@@ -69,6 +80,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
     defaultValues: {
       employeeId: user?.employeeId ?? "",
       email: user?.email ?? "",
+      password: "",
       firstName: user?.firstName ?? "",
       middleName: user?.middleName ?? "",
       lastName: user?.lastName ?? "",
@@ -101,7 +113,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
         });
 
         if (await id) {
-          toast.success(`You have invited ${parsedData.email}.`);
+          toast.success(`You have created an account for ${parsedData.email}.`);
           console.info("New user profile ID: ", id);
           router.push("/users");
         }
@@ -132,7 +144,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
         <div className="flex-1">
           <h1 className="text-2xl font-semibold tracking-tight">Create User</h1>
           <p className="text-muted-foreground text-sm">
-            Add a new user to Performa
+            Add a new user to {appConfig.name}
           </p>
         </div>
       </div>
@@ -145,7 +157,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
           form.handleSubmit();
         }}
       >
-        <div className="flex flex-col max-w-3xl gap-6">
+        <div className="flex flex-col gap-6">
           {/* Account Information */}
           <Card>
             <CardHeader>
@@ -156,7 +168,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <FieldGroup className="grid grid-cols-1 sm:grid-cols-2">
+              <FieldGroup className="grid grid-cols-1 sm:grid-cols-3">
                 <form.Field
                   name="email"
                   children={(field) => {
@@ -176,10 +188,45 @@ export default function UserForm({ user, mode }: UserFormProps) {
                           autoComplete="off"
                           placeholder="example@tpsdxb.com"
                         />
-                        <FieldDescription>
-                          An invitation email will be sent to this address so
-                          the user can set their password.
-                        </FieldDescription>
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+
+                <form.Field
+                  name="password"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>
+                          Password <span className="text-destructive">*</span>
+                        </FieldLabel>
+                        <div className="relative">
+                          <Input
+                            name={field.name}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            aria-invalid={isInvalid}
+                            type={showPassword ? "text" : "password"}
+                            autoComplete="off"
+                          />
+
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-1/2 -translate-y-1/2"
+                            onClick={() => setShowPassword((prev) => !prev)}
+                          >
+                            {showPassword ? <EyeOff /> : <Eye />}
+                          </Button>
+                        </div>
                         {isInvalid && (
                           <FieldError errors={field.state.meta.errors} />
                         )}
@@ -243,7 +290,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                     const isInvalid =
                       field.state.meta.isTouched && !field.state.meta.isValid;
                     return (
-                      <Field data-invalid={isInvalid} className="lg:col-span-2">
+                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
                           First Name <span className="text-destructive">*</span>
                         </FieldLabel>
@@ -269,7 +316,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                     const isInvalid =
                       field.state.meta.isTouched && !field.state.meta.isValid;
                     return (
-                      <Field data-invalid={isInvalid} className="lg:col-span-2">
+                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
                           Middle Name
                         </FieldLabel>
@@ -295,7 +342,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                     const isInvalid =
                       field.state.meta.isTouched && !field.state.meta.isValid;
                     return (
-                      <Field data-invalid={isInvalid} className="lg:col-span-2">
+                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
                           Last Name <span className="text-destructive">*</span>
                         </FieldLabel>
@@ -380,7 +427,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                     const isInvalid =
                       field.state.meta.isTouched && !field.state.meta.isValid;
                     return (
-                      <Field data-invalid={isInvalid} className="md:col-span-2">
+                      <Field data-invalid={isInvalid}>
                         <FieldLabel htmlFor={field.name}>
                           Phone Number
                         </FieldLabel>
@@ -500,56 +547,6 @@ export default function UserForm({ user, mode }: UserFormProps) {
                 />
 
                 <form.Field
-                  name="hireDate"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    const selectedDate = field.state.value
-                      ? new Date(field.state.value)
-                      : undefined;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Hire Date</FieldLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "justify-start text-left font-normal truncate",
-                                !selectedDate && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2" />
-                              {selectedDate
-                                ? format(selectedDate, "PPP")
-                                : "Select date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={selectedDate}
-                              autoFocus
-                              onSelect={(date) => {
-                                if (!date) {
-                                  field.handleChange("");
-                                  return;
-                                }
-
-                                field.handleChange(date.toISOString());
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
                   name="positionId"
                   children={(field) => {
                     const isInvalid =
@@ -598,6 +595,56 @@ export default function UserForm({ user, mode }: UserFormProps) {
                             </SelectGroup>
                           </SelectContent>
                         </Select>
+                        {isInvalid && (
+                          <FieldError errors={field.state.meta.errors} />
+                        )}
+                      </Field>
+                    );
+                  }}
+                />
+
+                <form.Field
+                  name="hireDate"
+                  children={(field) => {
+                    const isInvalid =
+                      field.state.meta.isTouched && !field.state.meta.isValid;
+                    const selectedDate = field.state.value
+                      ? new Date(field.state.value)
+                      : undefined;
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor={field.name}>Hire Date</FieldLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "justify-start text-left font-normal truncate",
+                                !selectedDate && "text-muted-foreground",
+                              )}
+                            >
+                              <CalendarIcon className="mr-2" />
+                              {selectedDate
+                                ? format(selectedDate, "PPP")
+                                : "Select date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={selectedDate}
+                              autoFocus
+                              onSelect={(date) => {
+                                if (!date) {
+                                  field.handleChange("");
+                                  return;
+                                }
+
+                                field.handleChange(date.toISOString());
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
                         {isInvalid && (
                           <FieldError errors={field.state.meta.errors} />
                         )}
