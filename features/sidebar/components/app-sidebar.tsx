@@ -1,22 +1,18 @@
-import { ChartColumnBig, House, Users } from "lucide-react";
+import { appConfig } from "@/lib/config/app";
+import { ChartColumnBig } from "lucide-react";
+import Link from "next/link";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
 } from "../../../components/ui/sidebar";
-import { NavUser } from "./nav-user";
-import Link from "next/link";
-import { SidebarItem } from "@/lib/sidebar/types";
 import { NavMain } from "./nav-main";
-import { appConfig } from "@/lib/config/app";
+import { NavUser } from "./nav-user";
 
 export function AppSidebar() {
   return (

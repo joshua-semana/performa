@@ -23,7 +23,7 @@ import {
   TextSkeleton,
 } from "@/components/skeletons/primitives";
 import { cn } from "@/lib/utils";
-import { getAvatarColor } from "@/lib/ui";
+import { getAvatarColor } from "@/lib/theme/avatar";
 
 export function NavUser() {
   const { isMobile } = useSidebar();

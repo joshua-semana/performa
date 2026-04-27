@@ -25,6 +25,8 @@ export const getProfiles = query({
     }),
 
     search: v.optional(v.string()),
+    positionId: v.optional(v.id("positions")),
+    departmentId: v.optional(v.id("departments")),
     status: v.optional(v.string()),
 
     sortBy: v.optional(v.string()),
@@ -37,24 +39,48 @@ export const getProfiles = query({
     } as const;
 
     let result;
+    let totalUserCount;
+    let totalSearchCount;
 
-    // You cannot assign OrderedQuery (.withSearchIndex) inside a QueryInitializer
+    const users = await ctx.db.query("userProfiles").collect();
+    totalUserCount = users.length;
+
     if (args.search) {
       const search = args.search.toLowerCase();
+      let query = ctx.db.query("userProfiles");
 
-      result = await ctx.db
-        .query("userProfiles")
-        .withSearchIndex("search_users", (q) => {
-          let searchQuery = q.search("searchText", search);
+      if (args.status) {
+        query = query.filter((q) => q.eq(q.field("status"), args.status));
+      }
 
-          return searchQuery;
-        })
-        .paginate(args.paginationOpts);
+      const buildSearchQuery = () =>
+        query.withSearchIndex("search_users", (q) =>
+          q.search("searchText", search),
+        );
+
+      result = await buildSearchQuery().paginate(args.paginationOpts);
+      totalSearchCount = (await buildSearchQuery().collect()).length;
     } else {
       let query = ctx.db.query("userProfiles");
 
       const sortIndex =
         args.sortBy && sortIndexMap[args.sortBy as keyof typeof sortIndexMap];
+
+      if (args.status) {
+        query = query.filter((q) => q.eq(q.field("status"), args.status));
+      }
+
+      if (args.positionId) {
+        query = query.filter((q) =>
+          q.eq(q.field("positionId"), args.positionId),
+        );
+      }
+
+      if (args.departmentId) {
+        query = query.filter((q) =>
+          q.eq(q.field("departmentId"), args.departmentId),
+        );
+      }
 
       if (sortIndex) {
         result = await query
@@ -88,6 +114,8 @@ export const getProfiles = query({
     return {
       ...result,
       page: enrichedPage,
+      totalUserCount,
+      totalSearchCount,
     };
   },
 });

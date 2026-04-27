@@ -2,7 +2,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { FieldDescription } from "@/components/ui/field";
 import { LoginForm } from "@/features/auth/forms/login-form";
 import { appConfig } from "@/lib/config/app";
-import { Icons } from "@/lib/icons";
+import { Icons } from "@/lib/theme/icons";
 
 export default function LoginPage() {
   return (

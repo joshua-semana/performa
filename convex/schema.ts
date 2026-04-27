@@ -43,6 +43,7 @@ const schema = defineSchema({
     .index("by_userId", ["userId"])
     .index("by_email", ["email"])
     .index("by_firstName", ["firstName"])
+    .index("by_status", ["status"])
     .searchIndex("search_users", {
       searchField: "searchText",
     }),

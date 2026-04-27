@@ -2,7 +2,6 @@
 
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   OnChangeFn,
   RowData,
@@ -10,29 +9,11 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { tableConfig } from "@/lib/config/table";
-import { ChevronFirst, ChevronLeft, ChevronRight, Search } from "lucide-react";
-import { Button } from "./button";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./input-group";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "./select";
-import { DataTableViewOptions } from "./data-table-view-options";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { DataTableContent } from "./data-table-content";
+import { DataTableFooter } from "./data-table-footer";
+import { DataTableToolbar } from "./data-table-toolbar";
+import { FilterConfig } from "@/lib/types/filter";
 
 interface DataTableProps<TData extends RowData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -50,9 +31,14 @@ interface DataTableProps<TData extends RowData, TValue> {
 
   onSearch?: (value: string) => void;
   searchValue?: string;
+  filters?: FilterConfig[];
+  hasViewOptions?: boolean;
 
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
+
+  totalSearchCount?: number;
+  totalUserCount?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -67,10 +53,18 @@ export function DataTable<TData, TValue>({
   isDone,
   onSearch,
   searchValue,
+  hasViewOptions = false,
+  filters,
   sorting,
   onSortingChange,
+  totalSearchCount,
+  totalUserCount,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
+
+  useEffect(() => {
+    setRowSelection({});
+  }, [pageIndex]);
 
   const table = useReactTable({
     data,
@@ -98,151 +92,28 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <div className="flex">
-        <InputGroup className="max-w-72">
-          <InputGroupInput
-            placeholder="Search ..."
-            value={searchValue ?? ""}
-            onChange={(e) => onSearch?.(e.target.value)}
-          />
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-        </InputGroup>
+      <DataTableToolbar
+        table={table}
+        onSearch={onSearch}
+        searchValue={searchValue}
+        hasViewOptions={hasViewOptions}
+        filters={filters}
+      />
 
-        <DataTableViewOptions table={table} />
-      </div>
+      <DataTableContent columns={columns} table={table} isLoading={isLoading} />
 
-      <div className="overflow-hidden rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center animate-pulse text-muted-foreground"
-                >
-                  Loading data, please wait ...
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      key={cell.id}
-                      style={{ width: cell.column.getSize() }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Rows per Page */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          Rows per page
-          <Select
-            disabled={isLoading}
-            value={rowsPerPage.toString()}
-            onValueChange={(e) => onRowsPerPageChange(Number(e))}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Sizes</SelectLabel>
-                {tableConfig.pageSizeOptions.map((size) => (
-                  <SelectItem key={size} value={size.toString()}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Selected Rows */}
-        <div className="text-sm text-muted-foreground">
-          {table.getSelectedRowModel().rows.length} of{" "}
-          {table.getRowModel().rows.length} row(s) selected on this page.
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="flex items-center gap-4">
-          <Button
-            onClick={() => setPageIndex(pageIndex - 1)}
-            disabled={pageIndex === 0}
-            variant={"outline"}
-            size={"icon"}
-          >
-            <ChevronFirst />
-          </Button>
-
-          <span>Page {pageIndex + 1} of many</span>
-
-          <Button
-            onClick={() => setPageIndex(pageIndex - 1)}
-            disabled={pageIndex === 0}
-            variant={"outline"}
-            size={"icon"}
-          >
-            <ChevronLeft />
-          </Button>
-
-          <Button
-            onClick={() => setPageIndex(pageIndex + 1)}
-            disabled={isDone || isLoading}
-            variant={"outline"}
-            size={"icon"}
-          >
-            <ChevronRight />
-          </Button>
-        </div>
-      </div>
+      <DataTableFooter
+        table={table}
+        isDone={isDone}
+        isLoading={isLoading}
+        pageIndex={pageIndex}
+        setPageIndex={setPageIndex}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={onRowsPerPageChange}
+        totalSearchCount={totalSearchCount}
+        totalUserCount={totalUserCount}
+        searchValue={searchValue}
+      />
     </div>
   );
 }

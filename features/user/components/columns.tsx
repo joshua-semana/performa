@@ -2,11 +2,13 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { DataTableCheckboxHeader } from "@/components/ui/data-table-checkbox-header";
+import { DataTableCheckboxRow } from "@/components/ui/data-table-checkbox-row";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import { Doc } from "@/convex/_generated/dataModel";
 import { columnSizes } from "@/lib/config/table";
-import { getAvatarColor, getStatusColor } from "@/lib/ui";
+import { getAvatarColor } from "@/lib/theme/avatar";
+import { getStatusColor } from "@/lib/theme/status";
 import { cn, formatFullName } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 
@@ -23,25 +25,8 @@ const statusStyles: Record<string, string> = {
 export const userColumns: ColumnDef<UserProfileRow>[] = [
   {
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="ml-1"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="ml-1"
-      />
-    ),
+    header: ({ table }) => <DataTableCheckboxHeader table={table} />,
+    cell: ({ row }) => <DataTableCheckboxRow row={row} />,
     size: 20,
     enableSorting: false,
     enableHiding: false,

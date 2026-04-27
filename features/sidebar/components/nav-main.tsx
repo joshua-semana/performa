@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { SidebarItem } from "@/lib/sidebar/types";
+import { SidebarItem } from "@/lib/types/common";
 import { House, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

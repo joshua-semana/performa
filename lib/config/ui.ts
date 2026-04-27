@@ -1,4 +1,4 @@
-import { Icons } from "../icons";
+import { Icons } from "../theme/icons";
 
 export const uiConfig = {
   iconLogo: Icons.logo,

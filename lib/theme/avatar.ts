@@ -1,16 +1,3 @@
-export function getStatusColor(status: string): string {
-  switch (status) {
-    case "active":
-      return "bg-emerald-500/20 text-emerald-500 border-emerald-500/20";
-    case "inactive":
-      return "bg-muted text-muted-foreground";
-    case "suspended":
-      return "bg-amber-500/20 text-amber-500 border-amber-500/20";
-    default:
-      return "bg-muted text-muted-foreground border-muted";
-  }
-}
-
 const avatarColors = [
   "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
   "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
@@ -29,7 +16,7 @@ export function getAvatarColor(initials: string): string {
   let hash = 0;
 
   for (const char of initials) {
-    hash += initials.charCodeAt(0);
+    hash += char.charCodeAt(0);
   }
 
   return avatarColors[hash % avatarColors.length];
