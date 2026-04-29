@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { DataTableCheckboxHeader } from "@/components/ui/data-table-checkbox-header";
 import { DataTableCheckboxRow } from "@/components/ui/data-table-checkbox-row";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -10,9 +9,10 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { columnSizes } from "@/lib/config/table";
 import { getAvatarColor } from "@/lib/theme/avatar";
 import { getStatusColor } from "@/lib/theme/status";
-import { cn, formatFullName } from "@/lib/utils";
+import { capitalize, cn, formatFullName } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
 import { UserPreview } from "./user-preview";
+import { UserRowActions } from "./user-row-actions";
 
 export type UserProfileRow = Doc<"userProfiles"> & {
   departmentName: string | undefined;
@@ -59,7 +59,9 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
           </Avatar>
           <div className="flex flex-col justify-center">
             <UserPreview user={row.original} />
-            <p className="text-xs text-muted-foreground capitalize">{role}</p>
+            <p className="text-xs text-muted-foreground capitalize">
+              {capitalize(role)}
+            </p>
           </div>
         </div>
       );
@@ -111,6 +113,15 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
           {row.original.status}
         </Badge>
       );
+    },
+  },
+  {
+    id: "actions",
+    size: columnSizes.action.size,
+    enableSorting: false,
+    enableHiding: false,
+    cell: ({ row }) => {
+      return <UserRowActions user={row.original} />;
     },
   },
 ];

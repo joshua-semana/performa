@@ -39,6 +39,7 @@ const schema = defineSchema({
     status: v.string(),
 
     searchText: v.string(),
+    updatedAt: v.optional(v.string()),
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"])

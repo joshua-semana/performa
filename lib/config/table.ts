@@ -16,9 +16,9 @@ export const columnSizes = {
     size: 160,
   },
   meta: {
-    size: 120,
+    size: 100,
   },
   action: {
-    size: 80,
+    size: 48,
   },
 };

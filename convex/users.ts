@@ -1,7 +1,11 @@
-import { createAccount } from "@convex-dev/auth/server";
+import {
+  createAccount,
+  modifyAccountCredentials,
+} from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
-import { action, mutation } from "./_generated/server";
+import { action, mutation, query } from "./_generated/server";
+import { generateRandomPassword } from "../lib/utils";
 
 export const adminCreateUser = action({
   args: {
@@ -96,5 +100,29 @@ export const createUserProfileByAdmin = mutation({
     });
 
     return userId;
+  },
+});
+
+export const resetUserPassword = action({
+  args: {
+    email: v.string(),
+  },
+
+  handler: async (ctx, args) => {
+    const newPassword = generateRandomPassword();
+
+    await modifyAccountCredentials(ctx, {
+      provider: "password",
+      account: {
+        id: args.email,
+        secret: newPassword,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Password reset is successful.`,
+      password: newPassword,
+    };
   },
 });

@@ -1,7 +1,9 @@
 "user client";
 
+import { FormDateField } from "@/components/form-date-field";
+import { FormSelectField } from "@/components/form-select-field";
+import { FormTextField } from "@/components/form-text-field";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -15,18 +17,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
 } from "@/components/ui/input-group";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -38,19 +34,10 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
+import { appConfig } from "@/lib/config/app";
 import { useForm } from "@tanstack/react-form";
 import { useAction, useQuery } from "convex/react";
-import { format } from "date-fns";
-import {
-  ArrowLeft,
-  CalendarIcon,
-  Eye,
-  EyeOff,
-  Loader2,
-  Save,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -59,7 +46,8 @@ import {
   editUserSchema,
   UserProfile,
 } from "../schemas/user.schema";
-import { appConfig } from "@/lib/config/app";
+import { SelectOption } from "@/lib/types/common";
+import { genderOptions } from "@/lib/constants/common";
 
 interface UserFormProps {
   user?: UserProfile;
@@ -73,6 +61,18 @@ export default function UserForm({ user, mode }: UserFormProps) {
 
   const positions = useQuery(api.positions.getPositions);
   const departments = useQuery(api.departments.getDepartments);
+
+  const departmentOptions: SelectOption[] =
+    departments?.map((department) => ({
+      label: department.name,
+      value: department._id,
+    })) ?? [];
+
+  const positionOptions: SelectOption[] =
+    positions?.map((position) => ({
+      label: position.name,
+      value: position._id,
+    })) ?? [];
 
   const createUser = useAction(api.users.adminCreateUser);
 
@@ -92,7 +92,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
       departmentId: user?.departmentId ?? "",
       positionId: user?.positionId ?? "",
       role: user?.role ?? "",
-      status: user?.role ?? "active",
+      status: user?.status ?? "active",
     },
     validators: {
       onSubmit: mode === "create" ? createUserSchema : editUserSchema,
@@ -157,7 +157,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
           form.handleSubmit();
         }}
       >
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 max-w-7xl">
           {/* Account Information */}
           <Card>
             <CardHeader>
@@ -169,107 +169,60 @@ export default function UserForm({ user, mode }: UserFormProps) {
             </CardHeader>
             <CardContent>
               <FieldGroup className="grid grid-cols-1 sm:grid-cols-3">
-                <form.Field
-                  name="email"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Email <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          autoComplete="off"
-                          placeholder="example@tpsdxb.com"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="email">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Email"
+                      placeholder="example@tpsdxb.com"
+                      type="text"
+                      required
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="password"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Password <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <div className="relative">
-                          <Input
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            type={showPassword ? "text" : "password"}
-                            autoComplete="off"
-                          />
-
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 top-1/2 -translate-y-1/2"
-                            onClick={() => setShowPassword((prev) => !prev)}
+                {mode === "create" && (
+                  <form.Field name="password">
+                    {(field) => (
+                      <FormTextField
+                        field={field}
+                        label="Password"
+                        type={showPassword ? "text" : "password"}
+                        required
+                        addOnContent={
+                          <InputGroupAddon
+                            align={"inline-end"}
+                            className="pr-1"
                           >
-                            {showPassword ? <EyeOff /> : <Eye />}
-                          </Button>
-                        </div>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                            >
+                              {showPassword ? <EyeOff /> : <Eye />}
+                            </Button>
+                          </InputGroupAddon>
+                        }
+                      />
+                    )}
+                  </form.Field>
+                )}
 
-                <form.Field
-                  name="role"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Role <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Select
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        >
-                          <SelectTrigger
-                            id={field.name}
-                            aria-invalid={isInvalid}
-                          >
-                            <SelectValue placeholder="Select a role" />
-                          </SelectTrigger>
-                          <SelectContent position="popper">
-                            <SelectItem value="administrator">
-                              Administrator
-                            </SelectItem>
-                            <SelectItem value="user">Normal User</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="role">
+                  {(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Role"
+                      placeholder="Select a role"
+                      required
+                      options={[
+                        { label: "Administrator", value: "administrator" },
+                        { label: "Normal User", value: "normal_user" },
+                      ]}
+                    />
+                  )}
+                </form.Field>
               </FieldGroup>
             </CardContent>
           </Card>
@@ -284,226 +237,92 @@ export default function UserForm({ user, mode }: UserFormProps) {
             </CardHeader>
             <CardContent>
               <FieldGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <form.Field
-                  name="firstName"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          First Name <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          autoComplete="off"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="firstName">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="First Name"
+                      required
+                      type="text"
+                      autoComplete="off"
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="middleName"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Middle Name
-                        </FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          autoComplete="off"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="middleName">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Middle Name"
+                      type="text"
+                      autoComplete="off"
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="lastName"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Last Name <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          autoComplete="off"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="lastName">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Last Name"
+                      required
+                      type="text"
+                      autoComplete="off"
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="suffix"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Suffix</FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          placeholder="ex. Jr., Ph.D., III"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="suffix">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Suffix"
+                      type="text"
+                      autoComplete="off"
+                      placeholder="ex. Jr., Ph.D., III"
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="gender"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Gender</FieldLabel>
-                        <Select
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                        >
-                          <SelectTrigger
-                            id={field.name}
-                            aria-invalid={isInvalid}
-                          >
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                          <SelectContent position="popper">
-                            <SelectGroup>
-                              <SelectLabel>Gender</SelectLabel>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="gender">
+                  {(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Gender"
+                      placeholder="Select a gender"
+                      required
+                      options={genderOptions}
+                    />
+                  )}
+                </form.Field>
+                <form.Field name="phoneNumber">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Phone Number"
+                      numericOnly
+                      autoComplete="off"
+                      maxLength={9}
+                      addOnContent={
+                        <InputGroupAddon>
+                          <InputGroupText>+971</InputGroupText>
+                        </InputGroupAddon>
+                      }
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="phoneNumber"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Phone Number
-                        </FieldLabel>
-                        <InputGroup>
-                          <InputGroupInput
-                            name={field.name}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            aria-invalid={isInvalid}
-                            maxLength={9}
-                            inputMode="numeric"
-                          />
-                          <InputGroupAddon>
-                            <InputGroupText>+971</InputGroupText>
-                          </InputGroupAddon>
-                        </InputGroup>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="dateOfBirth"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    const selectedDate = field.state.value
-                      ? new Date(field.state.value)
-                      : undefined;
-                    return (
-                      <Field data-invalid={isInvalid} className="md:col-span-2">
-                        <FieldLabel htmlFor={field.name}>
-                          Date of Birth
-                        </FieldLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "justify-start text-left font-normal truncate",
-                                !selectedDate && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2" />
-                              {selectedDate
-                                ? format(selectedDate, "PPP")
-                                : "Select date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={selectedDate}
-                              autoFocus
-                              onSelect={(date) => {
-                                if (!date) {
-                                  field.handleChange("");
-                                  return;
-                                }
-
-                                field.handleChange(date.toISOString());
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="dateOfBirth">
+                  {(field) => (
+                    <FormDateField
+                      field={field}
+                      type="dialog"
+                      label="Date of Birth"
+                      placeholder="Select date of birth"
+                      className="md:col-span-2"
+                    />
+                  )}
+                </form.Field>
               </FieldGroup>
             </CardContent>
           </Card>
@@ -518,208 +337,54 @@ export default function UserForm({ user, mode }: UserFormProps) {
             </CardHeader>
             <CardContent>
               <FieldGroup className="grid grid-cols-1 sm:grid-cols-2">
-                <form.Field
-                  name="employeeId"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Employee ID{" "}
-                          <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Input
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                          autoComplete="off"
-                          placeholder="1234"
-                        />
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="employeeId">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Employee ID"
+                      numericOnly
+                      maxLength={5}
+                      autoComplete="off"
+                      placeholder="1234"
+                      required
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="positionId"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>
-                          Position <span className="text-destructive">*</span>
-                        </FieldLabel>
-                        <Select
-                          name={field.name}
-                          value={field.state.value}
-                          onValueChange={field.handleChange}
-                          disabled={!positions}
-                        >
-                          <SelectTrigger
-                            id={field.name}
-                            aria-invalid={isInvalid}
-                          >
-                            <SelectValue
-                              placeholder={
-                                !positions
-                                  ? "Loading items ..."
-                                  : "Select position"
-                              }
-                            />
-                          </SelectTrigger>
-                          <SelectContent position="popper">
-                            <SelectGroup>
-                              <SelectLabel>Position</SelectLabel>
-                              {!positions ? (
-                                <SelectItem value="loading" disabled>
-                                  Loading...
-                                </SelectItem>
-                              ) : positions.length === 0 ? (
-                                <SelectItem value="empty" disabled>
-                                  No items found
-                                </SelectItem>
-                              ) : (
-                                positions.map((item) => (
-                                  <SelectItem key={item._id} value={item._id}>
-                                    {item.name}
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="positionId">
+                  {(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Position"
+                      options={positionOptions}
+                      loading={!positions}
+                      placeholder="Select position"
+                      required
+                    />
+                  )}
+                </form.Field>
 
-                <form.Field
-                  name="hireDate"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    const selectedDate = field.state.value
-                      ? new Date(field.state.value)
-                      : undefined;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Hire Date</FieldLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "justify-start text-left font-normal truncate",
-                                !selectedDate && "text-muted-foreground",
-                              )}
-                            >
-                              <CalendarIcon className="mr-2" />
-                              {selectedDate
-                                ? format(selectedDate, "PPP")
-                                : "Select date"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={selectedDate}
-                              autoFocus
-                              onSelect={(date) => {
-                                if (!date) {
-                                  field.handleChange("");
-                                  return;
-                                }
+                <form.Field name="hireDate">
+                  {(field) => (
+                    <FormDateField
+                      field={field}
+                      label="Hire Date"
+                      placeholder="Select date"
+                    />
+                  )}
+                </form.Field>
 
-                                field.handleChange(date.toISOString());
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
-
-                <form.Field
-                  name="departmentId"
-                  children={(field) => {
-                    const isInvalid =
-                      field.state.meta.isTouched && !field.state.meta.isValid;
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor={field.name}>Department</FieldLabel>
-                        <div className="flex gap-2">
-                          <Select
-                            name={field.name}
-                            value={field.state.value}
-                            onValueChange={field.handleChange}
-                            disabled={!departments}
-                          >
-                            <SelectTrigger
-                              id={field.name}
-                              aria-invalid={isInvalid}
-                              className="flex-1"
-                            >
-                              <SelectValue
-                                placeholder={
-                                  !departments
-                                    ? "Loading items ..."
-                                    : "Select department"
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent position="popper">
-                              <SelectGroup>
-                                <SelectLabel>Department</SelectLabel>
-                                {!departments ? (
-                                  <SelectItem value="loading" disabled>
-                                    Loading...
-                                  </SelectItem>
-                                ) : departments.length === 0 ? (
-                                  <SelectItem value="empty" disabled>
-                                    No items found
-                                  </SelectItem>
-                                ) : (
-                                  departments.map((item) => (
-                                    <SelectItem key={item._id} value={item._id}>
-                                      {item.name}
-                                    </SelectItem>
-                                  ))
-                                )}
-                              </SelectGroup>
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="outline"
-                            onClick={() => field.handleChange("")}
-                            disabled={!field.state.value}
-                          >
-                            <X />
-                          </Button>
-                        </div>
-
-                        {isInvalid && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </Field>
-                    );
-                  }}
-                />
+                <form.Field name="departmentId">
+                  {(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Department"
+                      options={departmentOptions}
+                      loading={!departments}
+                      placeholder="Select department"
+                    />
+                  )}
+                </form.Field>
               </FieldGroup>
             </CardContent>
           </Card>

@@ -4,12 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { getAvatarColor } from "@/lib/theme/avatar";
 import { getStatusColor } from "@/lib/theme/status";
-import {
-  capitalizeFirst,
-  cn,
-  formatDate,
-  formatPhoneNumber,
-} from "@/lib/utils";
+import { capitalize, cn, formatDate, formatPhoneNumber } from "@/lib/utils";
 import { UserInfoItem } from "./user-info-item";
 import {
   BriefcaseBusiness,
@@ -117,7 +112,7 @@ export function UserPreviewContent({
               <UserInfoItem
                 Icon={VenusAndMars}
                 title="Gender"
-                content={capitalizeFirst(user.gender)}
+                content={capitalize(user.gender)}
               />
               <UserInfoItem
                 Icon={Cake}

@@ -1,6 +1,6 @@
 // convex/userProfiles.ts
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getCurrentUserProfile = query({
@@ -38,30 +38,46 @@ export const getProfiles = query({
       firstName: "by_firstName",
     } as const;
 
-    let result;
-    let totalUserCount;
-    let totalSearchCount;
-    let enrichedPage;
-
     try {
-      const users = await ctx.db.query("userProfiles").collect();
-      totalUserCount = users.length;
+      const totalUserCount = (await ctx.db.query("userProfiles").collect())
+        .length;
+
+      let result;
+      let totalSearchCount: number | undefined;
 
       if (args.search) {
         const search = args.search.toLowerCase();
-        let query = ctx.db.query("userProfiles");
 
-        if (args.status) {
-          query = query.filter((q) => q.eq(q.field("status"), args.status));
-        }
-
-        const buildSearchQuery = () =>
-          query.withSearchIndex("search_users", (q) =>
+        const searchResults = await ctx.db
+          .query("userProfiles")
+          .withSearchIndex("search_users", (q) =>
             q.search("searchText", search),
-          );
+          )
+          .collect();
 
-        result = await buildSearchQuery().paginate(args.paginationOpts);
-        totalSearchCount = (await buildSearchQuery().collect()).length;
+        const filtered = searchResults.filter((user) => {
+          if (args.status && user.status !== args.status) return false;
+          if (args.positionId && user.positionId !== args.positionId)
+            return false;
+          if (args.departmentId && user.departmentId !== args.departmentId)
+            return false;
+          return true;
+        });
+
+        totalSearchCount = filtered.length;
+
+        const start = args.paginationOpts.cursor
+          ? Number(args.paginationOpts.cursor)
+          : 0;
+
+        const end = start + args.paginationOpts.numItems;
+        const page = filtered.slice(start, end);
+
+        result = {
+          page,
+          isDone: end >= filtered.length,
+          continueCursor: end >= filtered.length ? null : String(end),
+        };
       } else {
         let query = ctx.db.query("userProfiles");
 
@@ -94,34 +110,61 @@ export const getProfiles = query({
         }
       }
 
-      enrichedPage = await Promise.all(
+      const enrichedPage = await Promise.all(
         result.page.map(async (user) => {
-          const department = user.departmentId
-            ? await ctx.db.get(user.departmentId)
-            : null;
-
-          const position = await ctx.db.get(user.positionId);
-
-          const departmentName = department?.name;
-          const positionName = position?.name;
+          const [department, position] = await Promise.all([
+            user.departmentId ? ctx.db.get(user.departmentId) : null,
+            user.positionId ? ctx.db.get(user.positionId) : null,
+          ]);
 
           return {
             ...user,
-            departmentName,
-            positionName,
+            departmentName: department?.name ?? undefined,
+            positionName: position?.name ?? undefined,
           };
         }),
       );
+
+      return {
+        ...result,
+        page: enrichedPage,
+        totalUserCount,
+        totalSearchCount,
+      };
     } catch (error) {
       console.error("getProfiles failed", error);
       throw new Error("Unable to load users.");
     }
+  },
+});
+
+export const updateUserStatus = mutation({
+  args: {
+    userId: v.id("userProfiles"),
+    status: v.union(v.literal("active"), v.literal("suspended")),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+
+    if (!user) {
+      throw new Error("User not found.");
+    }
+
+    if (user.status === args.status) {
+      return {
+        success: true,
+        message: `User is already ${args.status}.`,
+      };
+    }
+
+    await ctx.db.patch(args.userId, {
+      status: args.status,
+      updatedAt: new Date().toISOString(),
+    });
 
     return {
-      ...result,
-      page: enrichedPage,
-      totalUserCount,
-      totalSearchCount,
+      success: true,
+      message: `User status updated to ${args.status}`,
     };
   },
 });

@@ -91,11 +91,12 @@ export function formatPhoneNumber(phoneNumber?: string) {
   return `+971 ${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`;
 }
 
-export function capitalizeFirst(text: string) {
+export function capitalize(text: string) {
   if (!text) return "";
 
   return text
     .trim()
+    .replace(/_/g, " ")
     .split(/\s+/)
     .map((word) => word[0]?.toUpperCase() + word.slice(1))
     .join(" ");
@@ -207,4 +208,16 @@ export function sortDates(
   const second = toDate(b)?.getTime() ?? 0;
 
   return order === "asc" ? first - second : second - first;
+}
+
+export function generateRandomPassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$";
+
+  let randomPassword = "";
+
+  for (let i = 0; i < 8; i++) {
+    randomPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return randomPassword;
 }

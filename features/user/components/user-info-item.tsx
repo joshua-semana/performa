@@ -1,5 +1,6 @@
 "use client";
 
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Copy, LucideIcon } from "lucide-react";
 import { useState } from "react";
@@ -11,14 +12,9 @@ interface UserInfoItemProps {
 }
 
 export function UserInfoItem({ Icon, title, content }: UserInfoItemProps) {
-  const [copied, setCopied] = useState(false);
   const isMobile = useIsMobile();
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(content ?? "");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
+  const { copied, copy } = useCopyToClipboard();
 
   return (
     <div className="flex gap-2">
@@ -36,7 +32,7 @@ export function UserInfoItem({ Icon, title, content }: UserInfoItemProps) {
 
               <button
                 type="button"
-                onClick={handleCopy}
+                onClick={() => copy(content)}
                 className="absolute inset-0 flex items-center gap-1 whitespace-nowrap text-xs font-medium opacity-0 justify-start transition-opacity duration-200 group-hover:opacity-100 cursor-pointer"
               >
                 <Copy className="size-3 shrink-0" />{" "}
