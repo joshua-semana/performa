@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DataTableCheckboxHeader } from "@/components/ui/data-table-checkbox-header";
 import { DataTableCheckboxRow } from "@/components/ui/data-table-checkbox-row";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
@@ -11,8 +12,9 @@ import { getAvatarColor } from "@/lib/theme/avatar";
 import { getStatusColor } from "@/lib/theme/status";
 import { cn, formatFullName } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
+import { UserPreview } from "./user-preview";
 
-type UserProfileRow = Doc<"userProfiles"> & {
+export type UserProfileRow = Doc<"userProfiles"> & {
   departmentName: string | undefined;
   positionName: string | undefined;
 };
@@ -55,8 +57,8 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
               {initials}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col ">
-            <p className="truncate font-medium">{fullName}</p>
+          <div className="flex flex-col justify-center">
+            <UserPreview user={row.original} />
             <p className="text-xs text-muted-foreground capitalize">{role}</p>
           </div>
         </div>

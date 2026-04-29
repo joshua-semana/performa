@@ -41,75 +41,81 @@ export const getProfiles = query({
     let result;
     let totalUserCount;
     let totalSearchCount;
+    let enrichedPage;
 
-    const users = await ctx.db.query("userProfiles").collect();
-    totalUserCount = users.length;
+    try {
+      const users = await ctx.db.query("userProfiles").collect();
+      totalUserCount = users.length;
 
-    if (args.search) {
-      const search = args.search.toLowerCase();
-      let query = ctx.db.query("userProfiles");
+      if (args.search) {
+        const search = args.search.toLowerCase();
+        let query = ctx.db.query("userProfiles");
 
-      if (args.status) {
-        query = query.filter((q) => q.eq(q.field("status"), args.status));
-      }
+        if (args.status) {
+          query = query.filter((q) => q.eq(q.field("status"), args.status));
+        }
 
-      const buildSearchQuery = () =>
-        query.withSearchIndex("search_users", (q) =>
-          q.search("searchText", search),
-        );
+        const buildSearchQuery = () =>
+          query.withSearchIndex("search_users", (q) =>
+            q.search("searchText", search),
+          );
 
-      result = await buildSearchQuery().paginate(args.paginationOpts);
-      totalSearchCount = (await buildSearchQuery().collect()).length;
-    } else {
-      let query = ctx.db.query("userProfiles");
-
-      const sortIndex =
-        args.sortBy && sortIndexMap[args.sortBy as keyof typeof sortIndexMap];
-
-      if (args.status) {
-        query = query.filter((q) => q.eq(q.field("status"), args.status));
-      }
-
-      if (args.positionId) {
-        query = query.filter((q) =>
-          q.eq(q.field("positionId"), args.positionId),
-        );
-      }
-
-      if (args.departmentId) {
-        query = query.filter((q) =>
-          q.eq(q.field("departmentId"), args.departmentId),
-        );
-      }
-
-      if (sortIndex) {
-        result = await query
-          .withIndex(sortIndex, (q) => q)
-          .order(args.sortOrder === "desc" ? "desc" : "asc")
-          .paginate(args.paginationOpts);
+        result = await buildSearchQuery().paginate(args.paginationOpts);
+        totalSearchCount = (await buildSearchQuery().collect()).length;
       } else {
-        result = await query.paginate(args.paginationOpts);
+        let query = ctx.db.query("userProfiles");
+
+        const sortIndex =
+          args.sortBy && sortIndexMap[args.sortBy as keyof typeof sortIndexMap];
+
+        if (args.status) {
+          query = query.filter((q) => q.eq(q.field("status"), args.status));
+        }
+
+        if (args.positionId) {
+          query = query.filter((q) =>
+            q.eq(q.field("positionId"), args.positionId),
+          );
+        }
+
+        if (args.departmentId) {
+          query = query.filter((q) =>
+            q.eq(q.field("departmentId"), args.departmentId),
+          );
+        }
+
+        if (sortIndex) {
+          result = await query
+            .withIndex(sortIndex, (q) => q)
+            .order(args.sortOrder === "desc" ? "desc" : "asc")
+            .paginate(args.paginationOpts);
+        } else {
+          result = await query.paginate(args.paginationOpts);
+        }
       }
+
+      enrichedPage = await Promise.all(
+        result.page.map(async (user) => {
+          const department = user.departmentId
+            ? await ctx.db.get(user.departmentId)
+            : null;
+
+          const position = await ctx.db.get(user.positionId);
+
+          const departmentName = department?.name;
+          const positionName = position?.name;
+
+          return {
+            ...user,
+            departmentName,
+            positionName,
+          };
+        }),
+      );
+    } catch (error) {
+      console.error("getProfiles failed", error);
+      throw new Error("Unable to load users.");
     }
-
-    const enrichedPage = await Promise.all(
-      result.page.map(async (user) => {
-        const department = user.departmentId
-          ? await ctx.db.get(user.departmentId)
-          : null;
-
-        const position = await ctx.db.get(user.positionId);
-
-        const departmentName = department?.name;
-        const positionName = position?.name;
-
-        return {
-          ...user,
-          departmentName,
-          positionName,
-        };
-      }),
-    );
 
     return {
       ...result,

@@ -24,7 +24,7 @@ export function DataTableToolbar<TData>({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-4">
-        <InputGroup className="max-w-72">
+        <InputGroup className="max-w-sm">
           <InputGroupInput
             placeholder="Search ..."
             value={searchValue ?? ""}

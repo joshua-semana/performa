@@ -48,6 +48,11 @@ export function DataTableFooter<TData>({
   const selectedCount = table.getSelectedRowModel().rows.length;
   const currentPageCount = table.getRowModel().rows.length;
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil((totalSearchCount ?? totalUserCount ?? 0) / rowsPerPage),
+  );
+
   function getFooterText() {
     if (selectedCount > 0) {
       return `${selectedCount} of ${currentPageCount} row(s) selected on this page.`;
@@ -117,7 +122,9 @@ export function DataTableFooter<TData>({
           <ChevronFirst />
         </Button>
 
-        <span>Page {pageIndex + 1} of many</span>
+        <span>
+          Page {pageIndex + 1} of {totalPages}
+        </span>
 
         <Button
           onClick={() => setPageIndex(pageIndex - 1)}
@@ -130,7 +137,7 @@ export function DataTableFooter<TData>({
 
         <Button
           onClick={() => setPageIndex(pageIndex + 1)}
-          disabled={isDone || isLoading}
+          disabled={pageIndex + 1 >= totalPages}
           variant={"outline"}
           size={"icon"}
         >
