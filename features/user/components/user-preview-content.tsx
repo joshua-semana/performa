@@ -17,17 +17,20 @@ import {
   VenusAndMars,
 } from "lucide-react";
 import { UserProfileRow } from "./columns";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 interface UserPreviewContentProps {
   user: UserProfileRow;
   isMobile?: boolean;
   fullName: string;
+  router: AppRouterInstance;
 }
 
 export function UserPreviewContent({
   user,
   isMobile,
   fullName,
+  router,
 }: UserPreviewContentProps) {
   const initials = user.firstName[0] + user.lastName[0];
 
@@ -40,7 +43,7 @@ export function UserPreviewContent({
               <AvatarFallback
                 className={cn(getAvatarColor(initials), "text-lg")}
               >
-                {initials}
+                {initials.toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex justify-between w-full">
@@ -60,13 +63,14 @@ export function UserPreviewContent({
                     className="capitalize rounded-sm"
                     variant={"secondary"}
                   >
-                    {user.role}
+                    {capitalize(user.role)}
                   </Badge>
                 </div>
               </div>
               <Button
                 variant={"secondary"}
                 type="button"
+                onClick={() => router.push(`/users/${user._id}/edit`)}
                 className={cn(
                   "text-sm sm:text-xs cursor-pointer p-2 h-7 tracking-wide hidden",
                   !isMobile && "flex",
@@ -135,11 +139,21 @@ export function UserPreviewContent({
             </div>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex-col items-start">
           <p className="text-muted-foreground text-xs">
             User created on{" "}
             <strong>
               {formatDate(user._creationTime, {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </strong>
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Last update on{" "}
+            <strong>
+              {formatDate(user.updatedAt, {
                 month: "long",
                 day: "numeric",
                 year: "numeric",

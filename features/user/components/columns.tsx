@@ -54,7 +54,7 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
         <div className="flex space-x-1.5 items-center">
           <Avatar size="lg">
             <AvatarFallback className={cn(getAvatarColor(initials))}>
-              {initials}
+              {initials.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col justify-center">

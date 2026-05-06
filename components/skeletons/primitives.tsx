@@ -13,7 +13,7 @@ export function BadgeSkeleton({ w = 60 }: { w?: number }) {
 }
 
 export function InputSkeleton({ w = 200 }: { w?: number }) {
-  return <Skeleton className="h-8 rounded-md" style={{ width: w }} />;
+  return <Skeleton className="h-9 rounded-md" />;
 }
 
 export function ButtonSkeleton({ w = 100 }: { w?: number }) {

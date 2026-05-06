@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
+import { InputSkeleton, TextSkeleton } from "./skeletons/primitives";
 
 interface FormSelectFieldProps {
   field: any;
@@ -22,9 +23,11 @@ interface FormSelectFieldProps {
 
   options: SelectOption[];
 
-  loading?: boolean;
+  dataLoading?: boolean;
   emptyMessage?: string;
   disabled?: boolean;
+
+  showSkeleton?: boolean;
 }
 
 export function FormSelectField({
@@ -36,11 +39,21 @@ export function FormSelectField({
   className,
   position = "popper",
   options,
-  loading = false,
+  dataLoading = false,
   emptyMessage = "No items found",
   disabled = false,
+  showSkeleton,
 }: FormSelectFieldProps) {
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+
+  if (showSkeleton) {
+    return (
+      <div className="flex flex-col gap-4">
+        <TextSkeleton />
+        <InputSkeleton />
+      </div>
+    );
+  }
 
   return (
     <Field data-invalid={isInvalid} className={cn(className)}>
@@ -51,16 +64,19 @@ export function FormSelectField({
 
       <div className="flex gap-2">
         <Select
-          value={field.state.value}
+          key={field.state.value ?? "empty"}
+          value={field.state.value ?? ""}
           onValueChange={field.handleChange}
           disabled={disabled}
         >
           <SelectTrigger aria-invalid={isInvalid} className="w-full">
-            <SelectValue placeholder={loading ? "Loading ..." : placeholder} />
+            <SelectValue
+              placeholder={dataLoading ? "Loading ..." : placeholder}
+            />
           </SelectTrigger>
 
           <SelectContent position={position}>
-            {loading ? (
+            {dataLoading ? (
               <SelectItem value="loading" disabled>
                 Loading ...
               </SelectItem>

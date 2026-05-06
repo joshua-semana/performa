@@ -1,5 +1,6 @@
-"user client";
+"use client";
 
+import ErrorState from "@/components/error-state";
 import { FormDateField } from "@/components/form-date-field";
 import { FormSelectField } from "@/components/form-select-field";
 import { FormTextField } from "@/components/form-text-field";
@@ -11,62 +12,75 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { FieldGroup } from "@/components/ui/field";
+import { InputGroupAddon, InputGroupText } from "@/components/ui/input-group";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { appConfig } from "@/lib/config/app";
+import { genderOptions, roleOptions } from "@/lib/constants/common";
+import { SelectOption } from "@/lib/types/common";
 import { useForm } from "@tanstack/react-form";
-import { useAction, useQuery } from "convex/react";
-import { ArrowLeft, Eye, EyeOff, Loader2, Save, X } from "lucide-react";
+import { useAction, useMutation, useQuery } from "convex/react";
+import { ArrowLeft, Eye, EyeOff, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useMemo, useState } from "react";
 import {
   createUserSchema,
   editUserSchema,
+  statusSchema,
   UserProfile,
 } from "../schemas/user.schema";
-import { SelectOption } from "@/lib/types/common";
-import { genderOptions } from "@/lib/constants/common";
+import { submitUserForm } from "./submit-form";
 
 interface UserFormProps {
-  user?: UserProfile;
-  mode: "create" | "edit";
+  id?: string;
+  mode: "edit" | "create";
 }
 
-export default function UserForm({ user, mode }: UserFormProps) {
+export default function UserForm({ id, mode }: UserFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const isCreate = mode === "create";
+  const pageTitle = isCreate ? "Create New user" : "Edit User";
+  const pageDescription = isCreate
+    ? `Add a new user to ${appConfig.name}`
+    : "Update user account details";
+
+  const userProfile = useQuery(
+    api.userProfiles.getProfileByID,
+    id ? { userProfileId: id } : "skip",
+  );
+
+  const isLoading = !isCreate && userProfile === undefined;
 
   const router = useRouter();
-
   const positions = useQuery(api.positions.getPositions);
   const departments = useQuery(api.departments.getDepartments);
+  const updateUserProfile = useMutation(api.userProfiles.updateUserProfile);
+  const createUser = useAction(api.users.adminCreateUser);
+  const updateUserPassword = useAction(api.users.updateUserPassword);
 
-  const departmentOptions: SelectOption[] =
-    departments?.map((department) => ({
-      label: department.name,
-      value: department._id,
-    })) ?? [];
+  const user = useMemo<UserProfile | undefined | null>(() => {
+    if (userProfile === undefined) return undefined;
+    if (userProfile === null) return null;
+
+    return {
+      userId: String(userProfile._id),
+      employeeId: userProfile.employeeId ?? "",
+      email: userProfile.email ?? "",
+      firstName: userProfile.firstName ?? "",
+      middleName: userProfile.middleName ?? "",
+      lastName: userProfile.lastName ?? "",
+      suffix: userProfile.suffix ?? "",
+      gender: userProfile.gender ?? "male",
+      phoneNumber: userProfile.phoneNumber ?? "",
+      dateOfBirth: userProfile.dateOfBirth ?? "",
+      hireDate: userProfile.hireDate ?? "",
+      departmentId: userProfile.departmentId ?? "",
+      positionId: userProfile.positionId ?? "",
+      role: userProfile.role ?? "",
+      status: statusSchema.catch("active").parse(userProfile.status),
+      password: "",
+    };
+  }, [userProfile]);
 
   const positionOptions: SelectOption[] =
     positions?.map((position) => ({
@@ -74,60 +88,58 @@ export default function UserForm({ user, mode }: UserFormProps) {
       value: position._id,
     })) ?? [];
 
-  const createUser = useAction(api.users.adminCreateUser);
+  const departmentOptions: SelectOption[] =
+    departments?.map((department) => ({
+      label: department.name,
+      value: department._id,
+    })) ?? [];
 
   const form = useForm({
     defaultValues: {
-      employeeId: user?.employeeId ?? "",
-      email: user?.email ?? "",
+      employeeId: "",
+      email: "",
       password: "",
-      firstName: user?.firstName ?? "",
-      middleName: user?.middleName ?? "",
-      lastName: user?.lastName ?? "",
-      suffix: user?.suffix ?? "",
-      gender: user?.gender ?? "male",
-      phoneNumber: user?.phoneNumber ?? "",
-      dateOfBirth: user?.dateOfBirth ?? "",
-      hireDate: user?.hireDate ?? "",
-      departmentId: user?.departmentId ?? "",
-      positionId: user?.positionId ?? "",
-      role: user?.role ?? "",
-      status: user?.status ?? "active",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      suffix: "",
+      gender: "male",
+      phoneNumber: "",
+      dateOfBirth: "",
+      hireDate: "",
+      departmentId: "",
+      positionId: "",
+      role: "",
+      status: "active",
     },
     validators: {
-      onSubmit: mode === "create" ? createUserSchema : editUserSchema,
+      onSubmit: isCreate ? createUserSchema : editUserSchema,
     },
     onSubmit: async ({ value }) => {
-      const parser = mode === "create" ? createUserSchema : editUserSchema;
-      const parsedData = parser.parse(value);
-
-      console.table(parsedData);
-
-      try {
-        const id = createUser({
-          ...parsedData,
-          departmentId: parsedData.departmentId
-            ? (parsedData.departmentId as Id<"departments">)
-            : undefined,
-          positionId: parsedData.positionId as Id<"positions">,
-        });
-
-        if (await id) {
-          toast.success(`You have created an account for ${parsedData.email}.`);
-          console.info("New user profile ID: ", id);
-          router.push("/users");
-        }
-      } catch (err) {
-        if (err instanceof Error) {
-          console.error(err.message);
-          toast.error(err.message);
-        } else {
-          console.error("Unknown error", err);
-          toast.error("Something went wrong");
-        }
-      }
+      await submitUserForm({
+        isCreate: isCreate,
+        user: user,
+        value: {
+          userId: user?.userId ?? "",
+          ...value,
+          status: statusSchema.catch("active").parse(value.status),
+        },
+        router: router,
+        createUserHook: createUser,
+        updateUserHook: updateUserProfile,
+        updatePasswordHook: updateUserPassword,
+      });
     },
   });
+
+  useEffect(() => {
+    if (!user || isCreate) return;
+    form.reset(user);
+  }, [user, isCreate, form]);
+
+  if (!isCreate && userProfile === null) {
+    return <ErrorState className="flex-1" />;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -142,14 +154,11 @@ export default function UserForm({ user, mode }: UserFormProps) {
           <ArrowLeft className="size-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Create User</h1>
-          <p className="text-muted-foreground text-sm">
-            Add a new user to {appConfig.name}
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">{pageTitle}</h1>
+          <p className="text-muted-foreground text-sm">{pageDescription}</p>
         </div>
       </div>
 
-      {/* Form */}
       <form
         id="form-create-user"
         onSubmit={(e) => {
@@ -177,37 +186,37 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       placeholder="example@tpsdxb.com"
                       type="text"
                       required
+                      disabled={!isCreate}
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
 
-                {mode === "create" && (
-                  <form.Field name="password">
-                    {(field) => (
-                      <FormTextField
-                        field={field}
-                        label="Password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        addOnContent={
-                          <InputGroupAddon
-                            align={"inline-end"}
-                            className="pr-1"
+                <form.Field name="password">
+                  {(field) => (
+                    <FormTextField
+                      field={field}
+                      label="Password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      autoComplete="off"
+                      showSkeleton={isLoading}
+                      placeholder={isCreate ? "" : "(unchanged)"}
+                      addOnContent={
+                        <InputGroupAddon align={"inline-end"} className="pr-1">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setShowPassword((prev) => !prev)}
                           >
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setShowPassword((prev) => !prev)}
-                            >
-                              {showPassword ? <EyeOff /> : <Eye />}
-                            </Button>
-                          </InputGroupAddon>
-                        }
-                      />
-                    )}
-                  </form.Field>
-                )}
+                            {showPassword ? <EyeOff /> : <Eye />}
+                          </Button>
+                        </InputGroupAddon>
+                      }
+                    />
+                  )}
+                </form.Field>
 
                 <form.Field name="role">
                   {(field) => (
@@ -216,10 +225,8 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       label="Role"
                       placeholder="Select a role"
                       required
-                      options={[
-                        { label: "Administrator", value: "administrator" },
-                        { label: "Normal User", value: "normal_user" },
-                      ]}
+                      showSkeleton={isLoading}
+                      options={roleOptions}
                     />
                   )}
                 </form.Field>
@@ -245,6 +252,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       required
                       type="text"
                       autoComplete="off"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -256,6 +264,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       label="Middle Name"
                       type="text"
                       autoComplete="off"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -268,6 +277,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       required
                       type="text"
                       autoComplete="off"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -280,6 +290,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       type="text"
                       autoComplete="off"
                       placeholder="ex. Jr., Ph.D., III"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -292,6 +303,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       placeholder="Select a gender"
                       required
                       options={genderOptions}
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -302,6 +314,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       label="Phone Number"
                       numericOnly
                       autoComplete="off"
+                      showSkeleton={isLoading}
                       maxLength={9}
                       addOnContent={
                         <InputGroupAddon>
@@ -320,6 +333,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       label="Date of Birth"
                       placeholder="Select date of birth"
                       className="md:col-span-2"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -347,19 +361,7 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       autoComplete="off"
                       placeholder="1234"
                       required
-                    />
-                  )}
-                </form.Field>
-
-                <form.Field name="positionId">
-                  {(field) => (
-                    <FormSelectField
-                      field={field}
-                      label="Position"
-                      options={positionOptions}
-                      loading={!positions}
-                      placeholder="Select position"
-                      required
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -370,6 +372,21 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       field={field}
                       label="Hire Date"
                       placeholder="Select date"
+                      showSkeleton={isLoading}
+                    />
+                  )}
+                </form.Field>
+
+                <form.Field name="positionId">
+                  {(field) => (
+                    <FormSelectField
+                      field={field}
+                      label="Position"
+                      options={positionOptions}
+                      dataLoading={!positions}
+                      placeholder="Select position"
+                      required
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -380,8 +397,9 @@ export default function UserForm({ user, mode }: UserFormProps) {
                       field={field}
                       label="Department"
                       options={departmentOptions}
-                      loading={!departments}
+                      dataLoading={!departments}
                       placeholder="Select department"
+                      showSkeleton={isLoading}
                     />
                   )}
                 </form.Field>
@@ -401,12 +419,12 @@ export default function UserForm({ user, mode }: UserFormProps) {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="animate-spin" />
-                      {mode === "create" ? "Creating ..." : "Saving ..."}
+                      {isCreate ? "Creating ..." : "Saving ..."}
                     </>
                   ) : (
                     <>
                       <Save />
-                      {mode === "create" ? "Create User" : "Save Changes"}
+                      {isCreate ? "Create User" : "Save Changes"}
                     </>
                   )}
                 </Button>

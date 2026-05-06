@@ -41,8 +41,15 @@ function generateBreadcrumbs(path: string): BreadcrumbItem[] {
     // Capitalize the first letter of each word, example: "product name" -> "Product Name"
     title = title.replace(/\b\w/g, (char) => char.toUpperCase());
     // Check if the segment is a type of ID, UUID, and other database keys, example: "1a2b3c" -> "Details"
-    if (segment.match(/^[0-9a-fA-F-]+$/)) {
-      title = "Details";
+    const parent = pathSegments[index - 1];
+
+    if (segment.match(/^[a-zA-Z0-9]{20,}$/)) {
+      const routeLabels: Record<string, string> = {
+        users: "User Details",
+        departments: "Department Details",
+      };
+
+      title = routeLabels[parent] ?? "Details";
     }
 
     const specialNames: Record<string, string> = {

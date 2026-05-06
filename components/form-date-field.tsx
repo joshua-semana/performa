@@ -20,6 +20,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "./ui/drawer";
+import { InputSkeleton, TextSkeleton } from "./skeletons/primitives";
 
 interface FormDateFieldProps {
   field: any;
@@ -27,6 +36,7 @@ interface FormDateFieldProps {
   placeholder?: string;
   className?: string;
   type?: "popover" | "dialog";
+  showSkeleton?: boolean;
 }
 
 export function FormDateField({
@@ -35,8 +45,11 @@ export function FormDateField({
   placeholder = "Select date",
   className,
   type = "popover",
+  showSkeleton,
 }: FormDateFieldProps) {
   const [open, setOpen] = useState(false);
+
+  const isMobile = useIsMobile();
 
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -70,41 +83,62 @@ export function FormDateField({
     </Button>
   );
 
-  const CalendarContent = (
-    <Calendar
-      mode="single"
-      selected={selectedDate}
-      autoFocus
-      onSelect={handleSelect}
-    />
-  );
+  const CalendarContent = (className?: string) => {
+    return (
+      <Calendar
+        className={className}
+        mode="single"
+        selected={selectedDate}
+        autoFocus
+        onSelect={handleSelect}
+      />
+    );
+  };
+
+  if (showSkeleton) {
+    return (
+      <div className="flex flex-col gap-4">
+        <TextSkeleton />
+        <InputSkeleton />
+      </div>
+    );
+  }
 
   return (
     <Field data-invalid={isInvalid} className={cn(className)}>
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 
-      {type === "popover" && (
+      {isMobile ? (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{label}</DrawerTitle>
+            </DrawerHeader>
+            <div className="mx-auto mb-24 mt-16">
+              {CalendarContent("scale-150")}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ) : type === "popover" ? (
         <Popover>
           <PopoverTrigger asChild>{Trigger}</PopoverTrigger>
-
           <PopoverContent className="w-auto p-0" align="start">
-            {CalendarContent}
+            {CalendarContent()}
           </PopoverContent>
         </Popover>
-      )}
-
-      {type === "dialog" && (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>{Trigger}</DialogTrigger>
-
-          <DialogContent className="w-fit p-0 overflow-hidden">
-            <DialogHeader className="px-4 pt-4 pb-0">
-              <DialogTitle>{label}</DialogTitle>
-            </DialogHeader>
-
-            <div className="p-4 pt-2">{CalendarContent}</div>
-          </DialogContent>
-        </Dialog>
+      ) : (
+        type === "dialog" && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>{Trigger}</DialogTrigger>
+            <DialogContent className="w-fit">
+              <DialogHeader>
+                <DialogTitle className="text-center">{label}</DialogTitle>
+              </DialogHeader>
+              {CalendarContent("scale-116")}
+            </DialogContent>
+          </Dialog>
+        )
       )}
 
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

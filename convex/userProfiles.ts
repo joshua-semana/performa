@@ -2,6 +2,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 export const getCurrentUserProfile = query({
   handler: async (ctx) => {
@@ -132,7 +133,6 @@ export const getProfiles = query({
         totalSearchCount,
       };
     } catch (error) {
-      console.error("getProfiles failed", error);
       throw new Error("Unable to load users.");
     }
   },
@@ -165,6 +165,66 @@ export const updateUserStatus = mutation({
     return {
       success: true,
       message: `User status updated to ${args.status}`,
+    };
+  },
+});
+
+export const getProfileByID = query({
+  args: {
+    userProfileId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      return await ctx.db.get(args.userProfileId as Id<"userProfiles">);
+    } catch {
+      return null;
+    }
+  },
+});
+
+export const updateUserProfile = mutation({
+  args: {
+    userId: v.string(),
+
+    employeeId: v.optional(v.string()),
+    email: v.optional(v.string()),
+
+    firstName: v.optional(v.string()),
+    middleName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    suffix: v.optional(v.string()),
+
+    gender: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    dateOfBirth: v.optional(v.string()),
+    hireDate: v.optional(v.string()),
+
+    departmentId: v.optional(v.string()),
+    positionId: v.optional(v.string()),
+
+    role: v.optional(v.string()),
+    status: v.optional(v.union(v.literal("active"), v.literal("suspended"))),
+  },
+
+  handler: async (ctx, args) => {
+    const { userId, ...changes } = args;
+
+    const existingUser = await ctx.db.get(userId as Id<"userProfiles">);
+
+    if (!existingUser) {
+      throw new Error("User profile not found.");
+    }
+
+    const patchData: Record<string, any> = {
+      ...changes,
+      updatedAt: new Date().toISOString(),
+    };
+
+    await ctx.db.patch(userId as Id<"userProfiles">, patchData);
+
+    return {
+      success: true,
+      message: "User profile updated successfully.",
     };
   },
 });

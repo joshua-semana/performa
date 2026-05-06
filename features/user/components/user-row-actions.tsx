@@ -16,12 +16,14 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUserActions } from "../hooks/use-user-actions";
 import { formatFullName } from "@/lib/utils";
 import { UserResetSuccessDialog } from "./user-reset-success-dialog";
+import { useRouter } from "next/navigation";
 
 interface UserRowActionsProps {
   user: UserProfileRow;
 }
 
 export function UserRowActions({ user }: UserRowActionsProps) {
+  const router = useRouter();
   const isActivated = user.status === "active";
   const fullName = formatFullName({
     firstName: user.firstName,
@@ -62,7 +64,9 @@ export function UserRowActions({ user }: UserRowActionsProps) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => router.push(`/users/${user._id}/edit`)}
+            >
               <Pencil /> Edit
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setResetOpen(true)}>

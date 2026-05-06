@@ -20,12 +20,11 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { UserPreviewContent } from "./user-preview-content";
+import { useRouter } from "next/navigation";
 
-interface UserPreviewProps {
-  user: UserProfileRow;
-}
+export function UserPreview({ user }: { user: UserProfileRow }) {
+  const router = useRouter();
 
-export function UserPreview({ user }: UserPreviewProps) {
   const fullName = formatFullName({
     firstName: user.firstName,
     middleName: user.middleName,
@@ -41,7 +40,7 @@ export function UserPreview({ user }: UserPreviewProps) {
   if (isMobile) {
     return (
       <Drawer>
-        <DrawerTrigger className="hover:underline cursor-pointer">
+        <DrawerTrigger className="hover:underline cursor-pointer text-left">
           {fullName}
         </DrawerTrigger>
         <DrawerContent>
@@ -53,6 +52,7 @@ export function UserPreview({ user }: UserPreviewProps) {
             fullName={fullName}
             isMobile={isMobile}
             user={user}
+            router={router}
           />
         </DrawerContent>
       </Drawer>
@@ -61,7 +61,7 @@ export function UserPreview({ user }: UserPreviewProps) {
 
   return (
     <Sheet>
-      <SheetTrigger className="hover:underline cursor-pointer">
+      <SheetTrigger className="hover:underline cursor-pointer text-left">
         {fullName}
       </SheetTrigger>
       <SheetContent>
@@ -73,6 +73,7 @@ export function UserPreview({ user }: UserPreviewProps) {
           fullName={fullName}
           isMobile={isMobile}
           user={user}
+          router={router}
         />
       </SheetContent>
     </Sheet>

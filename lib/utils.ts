@@ -221,3 +221,18 @@ export function generateRandomPassword() {
 
   return randomPassword;
 }
+
+export function getChangedFields(
+  original: Record<string, any>,
+  current: Record<string, any>,
+) {
+  const changes: Record<string, any> = {};
+
+  for (const key in current) {
+    if (current[key] !== original[key]) {
+      changes[key] = current[key];
+    }
+  }
+
+  return changes;
+}

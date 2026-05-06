@@ -10,3 +10,8 @@ export const genderOptions: SelectOption[] = [
     value: "female",
   },
 ];
+
+export const roleOptions: SelectOption[] = [
+  { label: "Administrator", value: "administrator" },
+  { label: "Normal User", value: "normal_user" },
+];

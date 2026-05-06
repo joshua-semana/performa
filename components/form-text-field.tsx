@@ -5,6 +5,7 @@ import React, {
 } from "react";
 import { Field, FieldDescription, FieldError, FieldLabel } from "./ui/field";
 import { cn } from "@/lib/utils";
+import { InputSkeleton, TextSkeleton } from "./skeletons/primitives";
 
 interface FormTextFieldProps {
   field: any;
@@ -18,6 +19,9 @@ interface FormTextFieldProps {
   autoComplete?: HTMLInputAutoCompleteAttribute;
   maxLength?: number;
   numericOnly?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
+  showSkeleton?: boolean;
 }
 
 export function FormTextField({
@@ -32,6 +36,9 @@ export function FormTextField({
   autoComplete,
   maxLength,
   numericOnly,
+  disabled,
+  readOnly,
+  showSkeleton,
 }: FormTextFieldProps) {
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -44,6 +51,15 @@ export function FormTextField({
 
     field.handleChange(value);
   };
+
+  if (showSkeleton) {
+    return (
+      <div className="flex flex-col gap-4">
+        <TextSkeleton />
+        <InputSkeleton />
+      </div>
+    );
+  }
 
   return (
     <Field data-invalid={isInvalid} className={cn(className)}>
@@ -62,6 +78,8 @@ export function FormTextField({
           aria-invalid={isInvalid}
           autoComplete={autoComplete}
           maxLength={maxLength}
+          disabled={disabled}
+          readOnly={readOnly}
         />
         {addOnContent}
         {description && <FieldDescription>{description}</FieldDescription>}

@@ -4,6 +4,8 @@ type Props = {
   };
 };
 
-export default function UserEditPage({ params }: Props) {
+export default function UserPage({ params }: Props) {
   const id = params.id;
+
+  return <p>This is the user page</p>;
 }
