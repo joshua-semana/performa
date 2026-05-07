@@ -8,7 +8,7 @@ export function useUserActions() {
 
   const handleUpdateStatus = async (
     id: Id<"userProfiles">,
-    newStatus: "active" | "suspended",
+    newStatus: "active" | "suspended" | "archived",
   ) => {
     await updateStatus({ userId: id, status: newStatus });
   };

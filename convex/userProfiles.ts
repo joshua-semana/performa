@@ -141,7 +141,11 @@ export const getProfiles = query({
 export const updateUserStatus = mutation({
   args: {
     userId: v.id("userProfiles"),
-    status: v.union(v.literal("active"), v.literal("suspended")),
+    status: v.union(
+      v.literal("active"),
+      v.literal("suspended"),
+      v.literal("archived"),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await ctx.db.get(args.userId);

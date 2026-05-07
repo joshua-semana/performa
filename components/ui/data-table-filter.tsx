@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -27,6 +26,7 @@ import { ListFilter, X } from "lucide-react";
 import { useMemo } from "react";
 import { Badge } from "./badge";
 import { Field, FieldLabel } from "./field";
+import { pluralize } from "@/lib/utils";
 
 interface DataTableFilterProps {
   filters: FilterConfig[];
@@ -51,7 +51,7 @@ function FilterFields({ filters }: { filters: FilterConfig[] }) {
               <SelectGroup>
                 <SelectLabel>{filter.label}</SelectLabel>
                 <SelectItem value="all">
-                  All {filter.label.toLowerCase()}
+                  All {pluralize(filter.label.toLowerCase())}
                 </SelectItem>
                 {filter.options.map((option) => (
                   <SelectItem key={option.value} value={option.value}>

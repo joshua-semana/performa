@@ -70,7 +70,9 @@ export function ConfirmDialog({
           <AlertDialogTitle>{title}</AlertDialogTitle>
 
           {description && (
-            <AlertDialogDescription>{description}</AlertDialogDescription>
+            <AlertDialogDescription className="text-pretty">
+              {description}
+            </AlertDialogDescription>
           )}
         </AlertDialogHeader>
 

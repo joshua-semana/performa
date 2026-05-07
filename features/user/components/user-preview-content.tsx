@@ -38,18 +38,17 @@ export function UserPreviewContent({
     <div className="no-scrollbar overflow-y-auto px-4 space-y-4 mb-4">
       <Card>
         <CardContent className="flex flex-col gap-6">
-          <div className="flex gap-4 items-center">
-            <Avatar className="size-14">
+          <div className="flex gap-4 items-center min-w-0">
+            <Avatar className="size-14 shrink-0">
               <AvatarFallback
                 className={cn(getAvatarColor(initials), "text-lg")}
               >
                 {initials.toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex justify-between w-full">
-              <div className="flex flex-col gap-1">
+            <div className="flex justify-between w-full gap-2 min-w-0">
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
                 <p className="font-medium text-lg truncate">{fullName}</p>
-
                 <div className="flex gap-1">
                   <Badge
                     className={cn(

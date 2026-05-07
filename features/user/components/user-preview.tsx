@@ -40,7 +40,7 @@ export function UserPreview({ user }: { user: UserProfileRow }) {
   if (isMobile) {
     return (
       <Drawer>
-        <DrawerTrigger className="hover:underline cursor-pointer text-left">
+        <DrawerTrigger className="hover:underline cursor-pointer text-left truncate w-full">
           {fullName}
         </DrawerTrigger>
         <DrawerContent>
@@ -61,7 +61,7 @@ export function UserPreview({ user }: { user: UserProfileRow }) {
 
   return (
     <Sheet>
-      <SheetTrigger className="hover:underline cursor-pointer text-left">
+      <SheetTrigger className="hover:underline cursor-pointer text-left truncate">
         {fullName}
       </SheetTrigger>
       <SheetContent>

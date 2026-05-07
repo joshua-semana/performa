@@ -19,7 +19,7 @@ import { appConfig } from "@/lib/config/app";
 import { genderOptions, roleOptions } from "@/lib/constants/common";
 import { SelectOption } from "@/lib/types/common";
 import { useForm } from "@tanstack/react-form";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { ArrowLeft, Eye, EyeOff, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -29,7 +29,7 @@ import {
   statusSchema,
   UserProfile,
 } from "../schemas/user.schema";
-import { submitUserForm } from "./submit-form";
+import { useUserSubmitForm } from "../hooks/use-user-submit-form";
 
 interface UserFormProps {
   id?: string;
@@ -38,6 +38,10 @@ interface UserFormProps {
 
 export default function UserForm({ id, mode }: UserFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+
+  const router = useRouter();
+  const { handleCreateUser, handleUpdateUser } = useUserSubmitForm();
+
   const isCreate = mode === "create";
   const pageTitle = isCreate ? "Create New user" : "Edit User";
   const pageDescription = isCreate
@@ -51,12 +55,8 @@ export default function UserForm({ id, mode }: UserFormProps) {
 
   const isLoading = !isCreate && userProfile === undefined;
 
-  const router = useRouter();
   const positions = useQuery(api.positions.getPositions);
   const departments = useQuery(api.departments.getDepartments);
-  const updateUserProfile = useMutation(api.userProfiles.updateUserProfile);
-  const createUser = useAction(api.users.adminCreateUser);
-  const updateUserPassword = useAction(api.users.updateUserPassword);
 
   const user = useMemo<UserProfile | undefined | null>(() => {
     if (userProfile === undefined) return undefined;
@@ -116,19 +116,18 @@ export default function UserForm({ id, mode }: UserFormProps) {
       onSubmit: isCreate ? createUserSchema : editUserSchema,
     },
     onSubmit: async ({ value }) => {
-      await submitUserForm({
-        isCreate: isCreate,
-        user: user,
-        value: {
-          userId: user?.userId ?? "",
-          ...value,
-          status: statusSchema.catch("active").parse(value.status),
-        },
-        router: router,
-        createUserHook: createUser,
-        updateUserHook: updateUserProfile,
-        updatePasswordHook: updateUserPassword,
-      });
+      if (isCreate) {
+        handleCreateUser({
+          parsedValues: createUserSchema.parse(value),
+        });
+      } else {
+        if (user) {
+          handleUpdateUser({
+            parsedValues: editUserSchema.parse(value),
+            user: user,
+          });
+        }
+      }
     },
   });
 
@@ -186,7 +185,6 @@ export default function UserForm({ id, mode }: UserFormProps) {
                       placeholder="example@tpsdxb.com"
                       type="text"
                       required
-                      disabled={!isCreate}
                       showSkeleton={isLoading}
                     />
                   )}

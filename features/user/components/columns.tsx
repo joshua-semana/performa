@@ -40,6 +40,7 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
     },
     accessorFn: (row) => `${row.firstName}`,
     minSize: columnSizes.primary.min,
+    maxSize: columnSizes.primary.ideal,
     enableHiding: false,
     cell: ({ row }) => {
       const { firstName, middleName, lastName, suffix, role } = row.original;
@@ -57,9 +58,9 @@ export const userColumns: ColumnDef<UserProfileRow>[] = [
               {initials.toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center max-w-60">
             <UserPreview user={row.original} />
-            <p className="text-xs text-muted-foreground capitalize">
+            <p className="text-xs text-muted-foreground capitalize truncate">
               {capitalize(role)}
             </p>
           </div>

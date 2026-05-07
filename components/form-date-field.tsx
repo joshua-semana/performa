@@ -78,7 +78,7 @@ export function FormDateField({
         !selectedDate && "text-muted-foreground",
       )}
     >
-      <CalendarIcon className="mr-2 size-4" />
+      <CalendarIcon className="size-4" />
       {displayText}
     </Button>
   );

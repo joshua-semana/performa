@@ -46,7 +46,7 @@ export default function RootLayout({
             <ConvexClientProvider>
               <TooltipProvider>{children}</TooltipProvider>
             </ConvexClientProvider>
-            <Toaster />
+            <Toaster richColors />
           </ThemeProvider>
         </body>
       </html>

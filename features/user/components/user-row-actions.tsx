@@ -9,7 +9,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { KeyRound, MoreVertical, Pencil, UserCheck, UserX } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  KeyRound,
+  MoreVertical,
+  Pencil,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 import { useState } from "react";
 import { UserProfileRow } from "./columns";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -17,6 +25,7 @@ import { useUserActions } from "../hooks/use-user-actions";
 import { formatFullName } from "@/lib/utils";
 import { UserResetSuccessDialog } from "./user-reset-success-dialog";
 import { useRouter } from "next/navigation";
+import { ACTIVE, ARCHIVED, SUSPENDED } from "@/lib/constants/user";
 
 interface UserRowActionsProps {
   user: UserProfileRow;
@@ -24,7 +33,8 @@ interface UserRowActionsProps {
 
 export function UserRowActions({ user }: UserRowActionsProps) {
   const router = useRouter();
-  const isActivated = user.status === "active";
+  const isActivated = user.status === ACTIVE;
+  const isUnarchived = !(user.status === ARCHIVED);
   const fullName = formatFullName({
     firstName: user.firstName,
     middleName: user.middleName,
@@ -35,6 +45,7 @@ export function UserRowActions({ user }: UserRowActionsProps) {
   const { handleUpdateStatus, handleResetPassword } = useUserActions();
 
   const [statusOpen, setStatusOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -74,23 +85,41 @@ export function UserRowActions({ user }: UserRowActionsProps) {
               Reset Password
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            {isActivated ? (
+            {isUnarchived && (
               <DropdownMenuItem
-                variant="destructive"
+                variant={isActivated ? "destructive" : "default"}
                 onSelect={() => setStatusOpen(true)}
               >
-                <UserX />
-                Suspend User
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                variant="default"
-                onSelect={() => setStatusOpen(true)}
-              >
-                <UserCheck />
-                Activate User
+                {isActivated ? (
+                  <>
+                    <UserX />
+                    Suspend User
+                  </>
+                ) : (
+                  <>
+                    <UserCheck />
+                    Activate User
+                  </>
+                )}
               </DropdownMenuItem>
             )}
+
+            <DropdownMenuItem
+              variant={isUnarchived ? "destructive" : "default"}
+              onSelect={() => setArchiveOpen(true)}
+            >
+              {isUnarchived ? (
+                <>
+                  <Archive />
+                  Archive User
+                </>
+              ) : (
+                <>
+                  <ArchiveRestore />
+                  Restore User
+                </>
+              )}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -101,14 +130,30 @@ export function UserRowActions({ user }: UserRowActionsProps) {
         title={isActivated ? "Suspend User" : "Activate User"}
         description={
           isActivated
-            ? `Are you sure you want to suspend ${fullName}?`
-            : `Are you sure you want to activate ${fullName}?`
+            ? `Are you sure you want to suspend the account of ${fullName}?`
+            : `Are you sure you want to activate the account of ${fullName}?`
         }
         onConfirm={() =>
-          handleUpdateStatus(user._id, isActivated ? "suspended" : "active")
+          handleUpdateStatus(user._id, isActivated ? SUSPENDED : ACTIVE)
         }
         destructive={isActivated}
         confirmText={isActivated ? "Suspend" : "Activate"}
+      />
+
+      <ConfirmDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        title={isUnarchived ? "Archive User" : "Restore User"}
+        description={
+          isUnarchived
+            ? `Are you sure you want to archive the account of ${fullName}?`
+            : `Are you sure you want to restore the account of ${fullName}?`
+        }
+        onConfirm={() =>
+          handleUpdateStatus(user._id, isUnarchived ? ARCHIVED : ACTIVE)
+        }
+        destructive={isUnarchived}
+        confirmText={isUnarchived ? "Archive" : "Restore"}
       />
 
       <ConfirmDialog

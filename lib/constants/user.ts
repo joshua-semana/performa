@@ -1,16 +1,25 @@
 import { SelectOption } from "../types/common";
 
+export const ACTIVE = "active";
+export const INACTIVE = "inactive";
+export const SUSPENDED = "suspended";
+export const ARCHIVED = "archived";
+
 export const userStatusOptions: SelectOption[] = [
   {
     label: "Active",
-    value: "active",
+    value: ACTIVE,
   },
   {
     label: "Inactive",
-    value: "inactive",
+    value: INACTIVE,
   },
   {
     label: "Suspended",
-    value: "suspended",
+    value: SUSPENDED,
+  },
+  {
+    label: "Archived",
+    value: ARCHIVED,
   },
 ];

@@ -236,3 +236,23 @@ export function getChangedFields(
 
   return changes;
 }
+
+export function pluralize(word: string) {
+  const lower = word.toLowerCase();
+
+  if (lower.endsWith("us")) {
+    return `${word.slice(0, -2)}uses`;
+  }
+
+  if (
+    lower.endsWith("s") ||
+    lower.endsWith("x") ||
+    lower.endsWith("z") ||
+    lower.endsWith("ch") ||
+    lower.endsWith("sh")
+  ) {
+    return `${word}es`;
+  }
+
+  return `${word}s`;
+}
