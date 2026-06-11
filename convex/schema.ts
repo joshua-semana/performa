@@ -1,6 +1,8 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { GROUP_TYPES } from "../lib/constants/group";
+import { COLOR_TYPES } from "../lib/constants/color";
 
 const schema = defineSchema({
   ...authTables,
@@ -47,6 +49,23 @@ const schema = defineSchema({
     .index("by_status", ["status"])
     .searchIndex("search_users", {
       searchField: "searchText",
+    }),
+
+  groups: defineTable({
+    name: v.string(),
+    code: v.optional(v.string()),
+    description: v.optional(v.string()),
+    type: v.union(...GROUP_TYPES.map((type) => v.literal(type))),
+    color: v.union(...COLOR_TYPES.map((type) => v.literal(type))),
+    memberCount: v.number(),
+    archived: v.boolean(),
+    isAssignable: v.boolean(),
+    updatedAt: v.number(), //So we can use Date.now() without converting it to ISOString()
+  })
+    .index("by_archived_type", ["archived", "type"])
+    .index("by_archived", ["archived"])
+    .searchIndex("search_groups", {
+      searchField: "name",
     }),
 });
 

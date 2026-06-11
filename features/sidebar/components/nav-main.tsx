@@ -9,7 +9,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { SidebarItem } from "@/lib/types/common";
-import { House, Users } from "lucide-react";
+import { Contact, House, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,6 +23,12 @@ const mainNavItems: SidebarItem[] = [
   {
     label: "Users",
     href: "/users",
+    icon: Contact,
+    isVisible: true,
+  },
+  {
+    label: "Groups",
+    href: "/groups",
     icon: Users,
     isVisible: true,
   },

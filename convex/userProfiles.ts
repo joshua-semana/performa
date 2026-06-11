@@ -221,6 +221,8 @@ export const updateUserProfile = mutation({
 
     const patchData: Record<string, any> = {
       ...changes,
+      searchText:
+        `${args.email} ${args.firstName} ${args.lastName} ${args.status}`.toLowerCase(),
       updatedAt: new Date().toISOString(),
     };
 

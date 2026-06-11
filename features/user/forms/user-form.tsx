@@ -1,6 +1,5 @@
 "use client";
 
-import ErrorState from "@/components/error-state";
 import { FormDateField } from "@/components/form-date-field";
 import { FormSelectField } from "@/components/form-select-field";
 import { FormTextField } from "@/components/form-text-field";
@@ -30,6 +29,7 @@ import {
   UserProfile,
 } from "../schemas/user.schema";
 import { useUserSubmitForm } from "../hooks/use-user-submit-form";
+import { ErrorState } from "@/components/states/error-state";
 
 interface UserFormProps {
   id?: string;
@@ -137,7 +137,16 @@ export default function UserForm({ id, mode }: UserFormProps) {
   }, [user, isCreate, form]);
 
   if (!isCreate && userProfile === null) {
-    return <ErrorState className="flex-1" />;
+    return (
+      <ErrorState
+        className="m-auto"
+        description="We couldn't load the requested information. It may no longer be available or the link may be invalid."
+        showBack
+        showRetry
+        onBack={() => router.back()}
+        onRetry={() => router.refresh()}
+      />
+    );
   }
 
   return (

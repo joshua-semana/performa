@@ -96,6 +96,7 @@ export function capitalize(text: string) {
 
   return text
     .trim()
+    .toLowerCase()
     .replace(/_/g, " ")
     .split(/\s+/)
     .map((word) => word[0]?.toUpperCase() + word.slice(1))
