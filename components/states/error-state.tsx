@@ -34,7 +34,7 @@ export function ErrorState({
 }: ErrorStateProps) {
   return (
     <StateCard
-      className={cn("w-fit", className)}
+      className={cn(className)}
       icon={icon}
       title={title}
       description={description}

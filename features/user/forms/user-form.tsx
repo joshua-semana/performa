@@ -139,7 +139,7 @@ export default function UserForm({ id, mode }: UserFormProps) {
   if (!isCreate && userProfile === null) {
     return (
       <ErrorState
-        className="m-auto"
+        className="m-auto w-full"
         description="We couldn't load the requested information. It may no longer be available or the link may be invalid."
         showBack
         showRetry

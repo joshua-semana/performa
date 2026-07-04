@@ -45,7 +45,6 @@ export default function GroupForm({
   const isCreate = mode === "create";
 
   const { handleCreateGroup, handleUpdateGroup } = useGroupSubmitForm();
-
   const group = useQuery(api.groups.getGroupByID, id ? { id: id } : "skip");
   const groupItem = useMemo<BaseGroupSchema | undefined | null>(() => {
     if (group === undefined) return undefined;
@@ -91,14 +90,19 @@ export default function GroupForm({
       if (result) {
         onOpenChange(false);
       }
+
+      console.log("Success: ", result);
+      console.table(value);
     },
   });
 
   useEffect(() => {
-    if (!open) {
+    if (isCreate) {
       form.reset();
+    } else if (groupItem) {
+      form.reset(groupItem);
     }
-  }, [open, form]);
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -4,7 +4,7 @@ import { optionalText, requiredText } from "@/lib/validations/helpers";
 import z, { optional } from "zod";
 
 export const baseGroupSchema = z.object({
-  id: optionalText,
+  id: optionalText(),
   name: requiredText("Name"),
   code: optionalText(),
   description: optionalText(),

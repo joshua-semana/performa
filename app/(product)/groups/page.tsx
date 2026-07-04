@@ -1,33 +1,21 @@
-"use client";
+import { EmptyState } from "@/components/states/empty-state";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Users } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { GroupList } from "@/features/group/components/group-list";
-import GroupForm from "@/features/group/forms/group-form";
-import { Plus } from "lucide-react";
-import { useState } from "react";
-
-export default function GroupsPage() {
-  const [formOpen, setFormOpen] = useState(false);
-
+export default function DefaultGroupPage() {
   return (
-    <>
-      <div className="flex flex-col gap-6 w-full">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Groups</h1>
-            <p className="text-muted-foreground text-sm">
-              Manage groups, assign members, and organize you team structure.
-            </p>
-          </div>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="size-4" />
-            Create Group
-          </Button>
-        </div>
-        <GroupList />
-      </div>
-
-      <GroupForm mode="create" open={formOpen} onOpenChange={setFormOpen} />
-    </>
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle>Group Details</CardTitle>
+      </CardHeader>
+      <CardContent className="flex items-center justify-center h-full">
+        <EmptyState
+          className="ring-0"
+          icon={Users}
+          title="Choose a group to get started"
+          description="Choose a group from the list to view members, manage permissions, and update settings."
+        />
+      </CardContent>
+    </Card>
   );
 }

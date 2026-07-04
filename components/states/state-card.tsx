@@ -20,32 +20,28 @@ export function StateCard({
   className,
 }: StateCardProps) {
   return (
-    <div className={cn("flex items-center justify-center", className)}>
-      <Card className="shadow-sm backdrop-blur-sm w-full">
-        <CardContent className="flex flex-col py-4 px-8 items-center text-center gap-1">
-          {Icon && (
-            <div className="flex items-center justify-center p-2.5 bg-secondary rounded-sm mb-2 border border-border/60">
-              <Icon className="size-5 text-muted-foreground" />
-            </div>
-          )}
+    <Card className={cn("shadow-sm backdrop-blur-sm w-full h-full", className)}>
+      <CardContent className="flex flex-1 flex-col py-4 px-8 items-center justify-center text-center gap-1">
+        {Icon && (
+          <div className="flex items-center justify-center p-2.5 bg-secondary rounded-sm mb-2 border border-border/60">
+            <Icon className="size-5 text-muted-foreground" />
+          </div>
+        )}
 
-          <h1 className="text-base font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-base font-semibold tracking-tight">{title}</h1>
 
-          {description && (
-            <p className="text-muted-foreground max-w-md leading-6 text-pretty">
-              {description}
-            </p>
-          )}
+        {description && (
+          <p className="text-muted-foreground max-w-md leading-6 text-pretty">
+            {description}
+          </p>
+        )}
 
-          {children}
+        {children}
 
-          {actions && (
-            <div className="flex flex-col gap-3 sm:flex-row mt-4">
-              {actions}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+        {actions && (
+          <div className="flex flex-col gap-3 sm:flex-row mt-4">{actions}</div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

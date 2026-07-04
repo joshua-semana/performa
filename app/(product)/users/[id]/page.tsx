@@ -1,11 +1,11 @@
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
-export default function UserPage({ params }: Props) {
-  const id = params.id;
+export default async function UserPage({ params }: Props) {
+  const { id } = await params;
 
   return <p>This is the user page</p>;
 }

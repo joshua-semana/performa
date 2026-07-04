@@ -1,6 +1,6 @@
 "use client";
 
-import { FieldSearch } from "@/components/field.search";
+import { FieldSearch } from "@/components/field-search";
 import { EmptyState } from "@/components/states/empty-state";
 import { LoadingState } from "@/components/states/loading-state";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +38,11 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { ListFooter } from "./list-footer";
 import { useListState } from "@/hooks/use-list-state";
+import { useRouter } from "next/navigation";
 
 export function GroupList() {
+  const router = useRouter();
+
   const listState = useListState();
   const [selectedGroupId, setSelectedGroupId] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -74,7 +77,7 @@ export function GroupList() {
   const handleClear = () => (setSearchValue(""), setType(undefined));
 
   return (
-    <Card className="max-w-sm">
+    <Card className="w-sm h-fit">
       <CardHeader>
         <CardTitle>Groups</CardTitle>
         <CardDescription>
@@ -113,12 +116,13 @@ export function GroupList() {
             )}
           </div>
 
-          {isLoading && <LoadingState searchText={debouncedSearch} />}
-          {isEmpty && <EmptyState searchText={debouncedSearch} />}
-
-          <div className="flex flex-col gap-1">
-            {!isLoading &&
-              result.page.map((g) => {
+          {isLoading ? (
+            <LoadingState searchText={debouncedSearch} />
+          ) : isEmpty ? (
+            <EmptyState searchText={debouncedSearch} />
+          ) : (
+            <div className="flex flex-col gap-1">
+              {result.page.map((g) => {
                 const group = groupMap[g.type];
                 const Icon = group.icon;
                 return (
@@ -126,7 +130,10 @@ export function GroupList() {
                     variant={selectedGroupId === g._id ? "outline" : "ghost"}
                     key={g._id}
                     className="w-full justify-start px-3 h-14"
-                    onClick={() => setSelectedGroupId(g._id)}
+                    onClick={() => {
+                      router.push(`/groups/${g._id}`);
+                      setSelectedGroupId(g._id);
+                    }}
                   >
                     <div className="flex items-center gap-2.5 w-full">
                       <div
@@ -155,7 +162,8 @@ export function GroupList() {
                   </Button>
                 );
               })}
-          </div>
+            </div>
+          )}
         </div>
       </CardContent>
 
